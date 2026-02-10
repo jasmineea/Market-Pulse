@@ -1,25 +1,23 @@
 #!/usr/bin/env bash
 set -e
 
-# Render provides PORT. Default fallback just in case.
 PORT="${PORT:-10000}"
 
-# If APP_KEY is missing, Laravel will 500. Render should set this as an env var.
-# (Do NOT generate a new key on every boot in production.)
-php -v
-
-# Cache/optimize (safe on boot)
+# Clear old caches (important when env vars change)
 php artisan config:clear || true
-php artisan route:clear || true
-php artisan view:clear || true
+php artisan route:clear  || true
+php artisan view:clear   || true
+php artisan cache:clear  || true
 
-# Only run these if you want caching in prod:
+# Optional: cache for prod speed (safe)
 php artisan config:cache || true
-php artisan route:cache || true
-php artisan view:cache || true
+php artisan route:cache  || true
+php artisan view:cache   || true
 
-# Storage symlink (optional)
+# Optional: storage symlink
 php artisan storage:link || true
 
-# Start Laravel (listens on all interfaces for Render)
+# If you use migrations against Supabase, uncomment this:
+# php artisan migrate --force || true
+
 exec php artisan serve --host=0.0.0.0 --port="${PORT}"

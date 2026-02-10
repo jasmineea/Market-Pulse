@@ -7,7 +7,6 @@
     
     # Install JS deps first (better caching)
     COPY package*.json ./
-    # If you use pnpm/yarn, tell me and I'll swap this section.
     RUN npm ci
     
     # Copy the rest of the app (so Vite can read resources/)
@@ -18,13 +17,19 @@
     
     
     # -------------------------
-    # Stage 2: PHP + Composer dependencies
+    # Stage 2: PHP + Composer + required extensions
     # -------------------------
-    FROM php:8.2-cli-alpine AS backend
+    FROM php:8.2-cli-alpine AS app
     
     WORKDIR /var/www/html
     
-    # System deps for common Laravel needs
+    # System dependencies
+    # - postgresql-dev: required for pdo_pgsql
+    # - icu-dev: intl
+    # - libzip-dev: zip
+    # - oniguruma-dev: mbstring support (Laravel commonly needs it)
+    # - sqlite/sqlite-dev: keep for local/dev or any sqlite usage
+    # - $PHPIZE_DEPS: build deps for PHP extensions
     RUN apk add --no-cache \
         bash \
         curl \
@@ -33,16 +38,19 @@
         icu-dev \
         libzip-dev \
         oniguruma-dev \
+        postgresql-dev \
         sqlite \
         sqlite-dev \
         $PHPIZE_DEPS
     
-    # PHP extensions typically needed by Laravel
+    # PHP extensions needed by Laravel + Postgres
     RUN docker-php-ext-install \
         intl \
+        mbstring \
         pdo \
         pdo_mysql \
         pdo_sqlite \
+        pdo_pgsql \
         zip
     
     # Install Composer
@@ -51,13 +59,13 @@
     # Copy app source
     COPY . .
     
-    # Install PHP deps (no dev)
+    # Install PHP deps (production)
     RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
     
     # Copy built frontend assets into public/build
     COPY --from=frontend /app/public/build ./public/build
     
-    # Make sure storage + cache are writable
+    # Ensure Laravel writable dirs exist + permissions
     RUN mkdir -p storage bootstrap/cache \
      && chmod -R 775 storage bootstrap/cache
     
