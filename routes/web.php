@@ -14,6 +14,9 @@ use App\Http\Controllers\MarketPulseController;
 
 Route::get('/market-pulse', [MarketPulseController::class, 'index'])->middleware(['auth', 'verified'])->name('market-pulse');
 
+// Cache warmup: call after deploy so first page loads are fast. Requires ?secret=CACHE_WARMUP_SECRET (404 if not set).
+Route::get('/warmup', CacheWarmupController::class)->name('warmup');
+
 // BigQuery env diagnostic (only when APP_DEBUG=true; remove or disable after debugging)
 Route::get('/bigquery-health', function () {
     if (! config('app.debug')) {

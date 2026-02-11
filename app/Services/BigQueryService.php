@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\Cache;
 
 class BigQueryService
 {
-    /** Default cache TTL for query results (seconds). Data is monthly so 10 min is fine. */
-    public const CACHE_TTL = 600;
+    /** Default cache TTL for query results (seconds). Monthly data — 30 min reduces BQ load and speeds up pages. */
+    public const CACHE_TTL = 1800;
 
     protected ?BigQueryClient $client = null;
 

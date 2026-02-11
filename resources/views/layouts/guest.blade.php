@@ -7,7 +7,8 @@
         <meta name="description" content="{{ $metaDescription ?? config('app.meta_description') }}">
         <meta name="robots" content="index, follow">
 
-        <title>{{ isset($title) ? $title . ' | ' . config('app.name') : config('app.name') }}</title>
+        @php $appName = (config('app.name') === 'Laravel') ? 'TerpInsights' : config('app.name'); @endphp
+        <title>{{ isset($title) ? $title . ' | ' . $appName : $appName }}</title>
 
         <!-- Favicon -->
         <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
@@ -15,12 +16,12 @@
 
         <!-- Open Graph / social -->
         <meta property="og:type" content="website">
-        <meta property="og:title" content="{{ isset($title) ? $title . ' | ' . config('app.name') : config('app.name') }}">
+        <meta property="og:title" content="{{ isset($title) ? $title . ' | ' . $appName : $appName }}">
         <meta property="og:description" content="{{ $metaDescription ?? config('app.meta_description') }}">
         <meta property="og:url" content="{{ url()->current() }}">
         <meta property="og:image" content="{{ asset('favicon.svg') }}">
         <meta name="twitter:card" content="summary">
-        <meta name="twitter:title" content="{{ isset($title) ? $title . ' | ' . config('app.name') : config('app.name') }}">
+        <meta name="twitter:title" content="{{ isset($title) ? $title . ' | ' . $appName : $appName }}">
         <meta name="twitter:description" content="{{ $metaDescription ?? config('app.meta_description') }}">
 
         <!-- Fonts: preconnect first, then load async so they don't block render -->

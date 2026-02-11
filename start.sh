@@ -3,13 +3,12 @@ set -e
 
 PORT="${PORT:-10000}"
 
-# Clear old caches (important when env vars change)
+# Clear config/route/view caches so env and code changes take effect (do NOT clear app cache — BigQuery cache should persist for speed)
 php artisan config:clear || true
 php artisan route:clear  || true
 php artisan view:clear   || true
-php artisan cache:clear  || true
 
-# Optional: cache for prod speed (safe)
+# Cache config/route/views for prod speed
 php artisan config:cache || true
 php artisan route:cache  || true
 php artisan view:cache   || true

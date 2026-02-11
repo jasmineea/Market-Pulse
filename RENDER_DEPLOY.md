@@ -54,6 +54,27 @@ The app writes the JSON to a temp file at runtime and uses it for BigQuery. Do *
 
 Redeploy the service so the new values are picked up. If you only change env vars and don’t redeploy, the old values are still in use.
 
+## Production speed (slow first load)
+
+The app caches BigQuery results for 30 minutes so dashboard and Market Pulse stay fast. Two things can still make production feel slow:
+
+1. **First request after deploy** – Cache is empty, so the first page load runs several BigQuery queries (5+ on dashboard, more on Market Pulse). Later requests use the cache and are fast.
+2. **Cold starts** – On Render, if the service spins down after inactivity, the first request after idle wakes it (often 30–60+ seconds), then that request also hits BigQuery with an empty cache.
+
+**What we do in code**
+
+- `start.sh` no longer runs `php artisan cache:clear`, so BigQuery cache is **not** wiped on every deploy/start. Config/route/view caches are still cleared and rebuilt so env changes take effect.
+- BigQuery cache TTL is 30 minutes so once cache is warm, pages stay fast longer.
+
+**Optional: warm the cache after deploy**
+
+1. In Render **Environment**, add: **Key** `CACHE_WARMUP_SECRET`, **Value** a long random string (keep it private).
+2. After each deploy, call: `GET https://YOUR-SERVICE.onrender.com/warmup?secret=YOUR_CACHE_WARMUP_SECRET` (e.g. from a cron or deploy hook). If the secret is not set, `/warmup` returns 404.
+
+**Optional: reduce cold starts**
+
+Use a free uptime monitor (e.g. UptimeRobot) to ping your site every 5–10 minutes so the service stays warm.
+
 ## Code changes in this repo
 
 - **Trust proxies** – `bootstrap/app.php` trusts proxies so Laravel sees HTTPS and the correct host (needed for cookies and redirects).
