@@ -8,13 +8,27 @@
                 </a>
             </div>
 
-            {{-- Filter by use case --}}
+            {{-- Filters --}}
             <form method="get" action="{{ route('admin.waitlist.index') }}" class="mb-4 flex flex-wrap items-center gap-3">
                 <label for="use_case" class="text-sm font-medium text-gray-700">Use case</label>
                 <select id="use_case" name="use_case" class="rounded-lg border-gray-300 shadow-sm focus:border-[#16a34a] focus:ring-[#16a34a] text-sm">
                     <option value="">All</option>
                     @foreach($useCases as $value => $label)
                         <option value="{{ $value }}" {{ request('use_case') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <label for="persona_type" class="text-sm font-medium text-gray-700">Persona</label>
+                <select id="persona_type" name="persona_type" class="rounded-lg border-gray-300 shadow-sm focus:border-[#16a34a] focus:ring-[#16a34a] text-sm">
+                    <option value="">All</option>
+                    @foreach($personaTypes as $value => $label)
+                        <option value="{{ $value }}" {{ request('persona_type') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <label for="operator_type" class="text-sm font-medium text-gray-700">Operator type</label>
+                <select id="operator_type" name="operator_type" class="rounded-lg border-gray-300 shadow-sm focus:border-[#16a34a] focus:ring-[#16a34a] text-sm">
+                    <option value="">All</option>
+                    @foreach($operatorTypes as $value => $label)
+                        <option value="{{ $value }}" {{ request('operator_type') === $value ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
                 </select>
                 <button type="submit" class="px-3 py-1.5 rounded-md bg-gray-100 text-gray-700 text-sm font-medium hover:bg-gray-200">Filter</button>
@@ -45,6 +59,8 @@
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $signup->email }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-600">{{ Str::limit($signup->organization, 30) }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $signup->persona_type_label ?? '—' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $signup->operator_type_label ?? '—' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $useCases[$signup->use_case] ?? $signup->use_case }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-600">
                                             @if(is_array($signup->interests) && count($signup->interests) > 0)

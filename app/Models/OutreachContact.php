@@ -45,6 +45,8 @@ class OutreachContact extends Model
     protected $fillable = [
         'name',
         'linkedin_url',
+        'persona_type',
+        'operator_type',
         'role',
         'organization',
         'location',
@@ -57,6 +59,22 @@ class OutreachContact extends Model
         'follow_up_date',
         'notes',
     ];
+
+    /**
+     * Persona types from config (shared with waitlist).
+     */
+    public static function personaTypes(): array
+    {
+        return config('terpinsights.persona_types', []);
+    }
+
+    /**
+     * Operator types from config (when persona = operator).
+     */
+    public static function operatorTypes(): array
+    {
+        return config('terpinsights.operator_types', []);
+    }
 
     /**
      * The attributes that should be cast.

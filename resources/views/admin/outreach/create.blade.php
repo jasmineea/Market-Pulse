@@ -18,7 +18,7 @@
                     </div>
                 @endif
 
-                <form method="post" action="{{ route('admin.outreach.store') }}" class="space-y-6">
+                <form method="post" action="{{ route('admin.outreach.store') }}" class="space-y-6" x-data="{ personaType: '{{ old('persona_type', '') }}' }">
                     @csrf
 
                     <div>
@@ -34,11 +34,24 @@
                     </div>
 
                     <div>
-                        <label for="role" class="block text-sm font-medium text-gray-700 mb-1">Role <span class="text-red-500">*</span></label>
-                        <select id="role" name="role" required class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#16a34a] focus:ring-[#16a34a]">
-                            <option value="">Select role</option>
-                            @foreach($roles as $r)
-                                <option value="{{ $r }}" {{ old('role') === $r ? 'selected' : '' }}>{{ $r }}</option>
+                        <label for="persona_type" class="block text-sm font-medium text-gray-700 mb-1">Primary Persona <span class="text-red-500">*</span></label>
+                        <select id="persona_type" name="persona_type" required
+                            x-model="personaType"
+                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#16a34a] focus:ring-[#16a34a]">
+                            <option value="">Select persona</option>
+                            @foreach($personaTypes as $value => $label)
+                                <option value="{{ $value }}" {{ old('persona_type') === (string) $value ? 'selected' : '' }}>{{ $label }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div x-show="personaType === 'operator'" x-cloak x-transition class="space-y-1">
+                        <label for="operator_type" class="block text-sm font-medium text-gray-700 mb-1">Business Type</label>
+                        <select id="operator_type" name="operator_type" :required="personaType === 'operator'"
+                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#16a34a] focus:ring-[#16a34a]">
+                            <option value="">Select business type</option>
+                            @foreach($operatorTypes as $value => $label)
+                                <option value="{{ $value }}" {{ old('operator_type') === (string) $value ? 'selected' : '' }}>{{ $label }}</option>
                             @endforeach
                         </select>
                     </div>

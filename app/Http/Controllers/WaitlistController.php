@@ -7,6 +7,7 @@ use App\Models\WaitlistSignup;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Validation\Rule;
 
 class WaitlistController extends Controller
 {
@@ -33,9 +34,19 @@ class WaitlistController extends Controller
      */
     public function store(Request $request)
     {
+        $personaTypes = array_keys(config('terpinsights.persona_types', []));
+        $operatorTypes = array_keys(config('terpinsights.operator_types', []));
+
         $validated = $request->validate([
             'email' => ['required', 'email'],
             'organization' => ['required', 'string', 'max:255'],
+            'persona_type' => ['required', 'string', 'in:' . implode(',', $personaTypes)],
+            'operator_type' => [
+                'nullable',
+                'string',
+                'in:' . implode(',', $operatorTypes),
+                Rule::requiredIf(fn () => $request->input('persona_type') === 'operator'),
+            ],
             'use_case' => ['required', 'string', 'in:' . implode(',', array_keys(self::USE_CASES))],
             'interests' => ['nullable', 'array'],
             'interests.*' => ['string', 'in:' . implode(',', array_keys(self::INTERESTS))],

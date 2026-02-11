@@ -80,6 +80,18 @@
                         <option value="{{ $r }}" {{ request('role') === $r ? 'selected' : '' }}>{{ $r }}</option>
                     @endforeach
                 </select>
+                <select name="persona_type" class="rounded-lg border-gray-300 shadow-sm focus:border-[#16a34a] focus:ring-[#16a34a] text-sm">
+                    <option value="">All personas</option>
+                    @foreach($personaTypes as $value => $label)
+                        <option value="{{ $value }}" {{ request('persona_type') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <select name="operator_type" class="rounded-lg border-gray-300 shadow-sm focus:border-[#16a34a] focus:ring-[#16a34a] text-sm">
+                    <option value="">All operator types</option>
+                    @foreach($operatorTypes as $value => $label)
+                        <option value="{{ $value }}" {{ request('operator_type') === $value ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </select>
                 <select name="priority" class="rounded-lg border-gray-300 shadow-sm focus:border-[#16a34a] focus:ring-[#16a34a] text-sm">
                     <option value="">All priorities</option>
                     @foreach($priorities as $p)
@@ -112,6 +124,8 @@
                                         <a href="{{ request()->fullUrlWithQuery(['sort' => 'name', 'direction' => request('sort') === 'name' && request('direction') === 'asc' ? 'desc' : 'asc']) }}" class="hover:text-gray-700">Name</a>
                                     </th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">LinkedIn</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Persona</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Operator type</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Organization</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
@@ -135,6 +149,8 @@
                                                 —
                                             @endif
                                         </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $personaTypes[$contact->persona_type] ?? '—' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $operatorTypes[$contact->operator_type] ?? '—' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $contact->role ?? '—' }}</td>
                                         <td class="px-6 py-4 text-sm text-gray-600">{{ Str::limit($contact->organization, 25) ?: '—' }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ $contact->priority ?? '—' }}</td>

@@ -3,12 +3,15 @@
 @php
     $useCases = \App\Http\Controllers\WaitlistController::USE_CASES;
     $interests = \App\Http\Controllers\WaitlistController::INTERESTS;
+    $personaTypes = config('terpinsights.persona_types', []);
+    $operatorTypes = config('terpinsights.operator_types', []);
 @endphp
 
 <div x-data="{
     submitted: false,
     error: null,
     loading: false,
+    personaType: '',
     async submitForm() {
         this.loading = true;
         this.error = null;
@@ -17,6 +20,8 @@
         const body = {
             email: data.get('email'),
             organization: data.get('organization'),
+            persona_type: data.get('persona_type'),
+            operator_type: data.get('persona_type') === 'operator' ? data.get('operator_type') : null,
             use_case: data.get('use_case'),
             notes: data.get('notes') || null,
             source_page: data.get('source_page') || null,
@@ -70,6 +75,29 @@
                 <input type="text" id="waitlist-organization" name="organization" required
                     placeholder="Organization, outlet, or affiliation"
                     class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#16a34a] focus:ring-[#16a34a] text-gray-900">
+            </div>
+
+            <div>
+                <label for="waitlist-persona_type" class="block text-sm font-medium text-gray-700 mb-1">Primary Persona <span class="text-red-500">*</span></label>
+                <select id="waitlist-persona_type" name="persona_type" required
+                    x-model="personaType"
+                    class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#16a34a] focus:ring-[#16a34a] text-gray-900">
+                    <option value="">Select...</option>
+                    @foreach($personaTypes as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div x-show="personaType === 'operator'" x-cloak x-transition class="space-y-1">
+                <label for="waitlist-operator_type" class="block text-sm font-medium text-gray-700 mb-1">Business Type <span class="text-red-500">*</span></label>
+                <select id="waitlist-operator_type" name="operator_type" :required="personaType === 'operator'"
+                    class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#16a34a] focus:ring-[#16a34a] text-gray-900">
+                    <option value="">Select...</option>
+                    @foreach($operatorTypes as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
+                </select>
             </div>
 
             <div>

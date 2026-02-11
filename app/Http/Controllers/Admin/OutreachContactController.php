@@ -7,6 +7,7 @@ use App\Models\OutreachContact;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -31,6 +32,14 @@ class OutreachContactController extends Controller
             $query->where('role', $request->input('role'));
         }
 
+        if ($request->filled('persona_type')) {
+            $query->where('persona_type', $request->input('persona_type'));
+        }
+
+        if ($request->filled('operator_type')) {
+            $query->where('operator_type', $request->input('operator_type'));
+        }
+
         if ($request->filled('priority')) {
             $query->where('priority', $request->input('priority'));
         }
@@ -41,7 +50,7 @@ class OutreachContactController extends Controller
 
         $sort = $request->input('sort', 'updated_at');
         $direction = $request->input('direction', 'desc');
-        if (in_array($sort, ['name', 'status', 'role', 'priority', 'follow_up_date', 'date_contacted', 'updated_at'], true)) {
+        if (in_array($sort, ['name', 'status', 'role', 'persona_type', 'operator_type', 'priority', 'follow_up_date', 'date_contacted', 'updated_at'], true)) {
             $query->orderBy($sort, $direction === 'asc' ? 'asc' : 'desc');
         }
 
@@ -54,6 +63,8 @@ class OutreachContactController extends Controller
             'statuses' => OutreachContact::STATUSES,
             'priorities' => OutreachContact::PRIORITIES,
             'roles' => OutreachContact::ROLES,
+            'personaTypes' => OutreachContact::personaTypes(),
+            'operatorTypes' => OutreachContact::operatorTypes(),
             'metrics' => $metrics,
         ]);
     }
@@ -67,6 +78,8 @@ class OutreachContactController extends Controller
             'statuses' => OutreachContact::STATUSES,
             'priorities' => OutreachContact::PRIORITIES,
             'roles' => OutreachContact::ROLES,
+            'personaTypes' => OutreachContact::personaTypes(),
+            'operatorTypes' => OutreachContact::operatorTypes(),
         ]);
     }
 
@@ -94,6 +107,8 @@ class OutreachContactController extends Controller
             'statuses' => OutreachContact::STATUSES,
             'priorities' => OutreachContact::PRIORITIES,
             'roles' => OutreachContact::ROLES,
+            'personaTypes' => OutreachContact::personaTypes(),
+            'operatorTypes' => OutreachContact::operatorTypes(),
         ]);
     }
 
@@ -176,6 +191,12 @@ class OutreachContactController extends Controller
         if ($request->filled('organization')) {
             $query->where('organization', 'like', '%' . $request->input('organization') . '%');
         }
+        if ($request->filled('persona_type')) {
+            $query->where('persona_type', $request->input('persona_type'));
+        }
+        if ($request->filled('operator_type')) {
+            $query->where('operator_type', $request->input('operator_type'));
+        }
 
         $contacts = $query->get();
         $filename = 'outreach_contacts_' . now()->format('Y-m-d_His') . '.csv';
@@ -183,7 +204,7 @@ class OutreachContactController extends Controller
         return Response::streamDownload(function () use ($contacts) {
             $out = fopen('php://output', 'w');
             fputcsv($out, [
-                'id', 'name', 'linkedin_url', 'role', 'organization', 'location', 'why_selected',
+                'id', 'name', 'linkedin_url', 'persona_type', 'operator_type', 'role', 'organization', 'location', 'why_selected',
                 'priority', 'source', 'status', 'date_contacted', 'response_summary', 'follow_up_date',
                 'notes', 'created_at', 'updated_at',
             ]);
@@ -192,6 +213,8 @@ class OutreachContactController extends Controller
                     $c->id,
                     $c->name,
                     $c->linkedin_url,
+                    $c->persona_type,
+                    $c->operator_type,
                     $c->role,
                     $c->organization,
                     $c->location,
@@ -221,10 +244,20 @@ class OutreachContactController extends Controller
      */
     private function validateContact(Request $request): array
     {
+        $personaTypes = array_keys(OutreachContact::personaTypes());
+        $operatorTypes = array_keys(OutreachContact::operatorTypes());
+
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'linkedin_url' => ['required', 'string', 'url', 'max:500'],
-            'role' => ['required', 'string', 'in:'.implode(',', OutreachContact::ROLES)],
+            'persona_type' => ['required', 'string', Rule::in($personaTypes)],
+            'operator_type' => [
+                'nullable',
+                'string',
+                Rule::in($operatorTypes),
+                Rule::requiredIf($request->input('persona_type') === 'operator'),
+            ],
+            'role' => ['nullable', 'string', 'in:'.implode(',', OutreachContact::ROLES)],
             'organization' => ['nullable', 'string', 'max:255'],
             'location' => ['nullable', 'string', 'max:255'],
             'why_selected' => ['nullable', 'string', 'max:65535'],
