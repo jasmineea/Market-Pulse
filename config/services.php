@@ -20,6 +20,9 @@ return [
         'key_json' => env('GOOGLE_APPLICATION_CREDENTIALS_JSON'), // Optional: full JSON key for Render etc.
     ],
 
+    'google_analytics_id' => env('GOOGLE_ANALYTICS_ID', 'G-LHKJ5L5WT0'),
+
+    'google_tag_manager_id' => env('GTM_CONTAINER_ID', 'GTM-KPQGB2KW'),
 
 
     'postmark' => [
