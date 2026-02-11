@@ -14,6 +14,24 @@ use App\Http\Controllers\MarketPulseController;
 
 Route::get('/market-pulse', [MarketPulseController::class, 'index'])->middleware(['auth', 'verified'])->name('market-pulse');
 
+// BigQuery env diagnostic (only when APP_DEBUG=true; remove or disable after debugging)
+Route::get('/bigquery-health', function () {
+    if (! config('app.debug')) {
+        abort(404);
+    }
+    $keyJson = env('GOOGLE_APPLICATION_CREDENTIALS_JSON');
+    $storageApp = storage_path('app');
+    $credsPath = $storageApp . '/google-credentials.json';
+
+    return response()->json([
+        'project_id_set' => ! empty(trim((string) env('BQ_PROJECT_ID'))),
+        'key_json_set' => ! empty($keyJson) && strlen($keyJson) > 0,
+        'key_json_length' => is_string($keyJson) ? strlen($keyJson) : 0,
+        'storage_app_writable' => is_dir($storageApp) && is_writable($storageApp),
+        'credentials_file_exists' => file_exists($credsPath),
+    ], 200, ['Content-Type' => 'application/json']);
+})->name('bigquery-health');
+
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');

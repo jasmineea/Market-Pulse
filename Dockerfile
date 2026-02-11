@@ -66,8 +66,9 @@
     COPY --from=frontend /app/public/build ./public/build
     
     # Ensure Laravel writable dirs exist + permissions
-    RUN mkdir -p storage bootstrap/cache \
-     && chmod -R 775 storage bootstrap/cache
+    RUN mkdir -p storage/framework/cache storage/framework/sessions storage/framework/views bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+   
     
     # Add start script
     COPY start.sh /usr/local/bin/start.sh

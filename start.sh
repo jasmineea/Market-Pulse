@@ -17,7 +17,7 @@ php artisan view:cache   || true
 # Optional: storage symlink
 php artisan storage:link || true
 
-# If you use migrations against Supabase, uncomment this:
-# php artisan migrate --force || true
+# Run migrations (required for users/sessions tables; safe to run on every deploy)
+php artisan migrate --force || true
 
 exec php artisan serve --host=0.0.0.0 --port="${PORT}"

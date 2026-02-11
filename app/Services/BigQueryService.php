@@ -6,22 +6,104 @@ use Google\Cloud\BigQuery\BigQueryClient;
 
 class BigQueryService
 {
-    protected BigQueryClient $client;
+    protected ?BigQueryClient $client = null;
 
+    /**
+     * Don't create the client in constructor so the app can boot (e.g. login) when
+     * credentials are missing (e.g. on Render without a key file). Client is created
+     * lazily when runQuery() is first called.
+     */
     public function __construct()
     {
+    }
+
+    /**
+     * Get the BigQuery client, creating it only when credentials are available.
+     * Supports (1) key file path via GOOGLE_APPLICATION_CREDENTIALS or (2) inline JSON via
+     * GOOGLE_APPLICATION_CREDENTIALS_JSON (e.g. on Render where you can't upload files).
+     * Returns null if no valid credentials are found.
+     */
+    protected function getClient(): ?BigQueryClient
+    {
+        if ($this->client !== null) {
+            return $this->client;
+        }
+
+        // Read from env first so we're not affected by config cache (e.g. on Render)
+        $projectId = env('BQ_PROJECT_ID') ?: config('services.bigquery.project_id');
+        $keyFile = env('GOOGLE_APPLICATION_CREDENTIALS') ?: config('services.bigquery.key_file');
+        $keyJson = env('GOOGLE_APPLICATION_CREDENTIALS_JSON') ?: config('services.bigquery.key_json');
+
+        // Prefer inline JSON (for Render): write to a temp file and use that path
+        $decoded = null;
+        if (! empty($keyJson) && is_string($keyJson)) {
+            $decoded = json_decode($keyJson, true);
+            // Must have private_key (and be valid JSON) or Google client will throw
+            if (is_array($decoded) && ! empty($decoded['private_key'])) {
+                $path = storage_path('app/google-credentials.json');
+                if (is_dir(dirname($path)) || @mkdir(dirname($path), 0755, true)) {
+                    // Write normalized JSON so escaping is correct (env var pastes can break \n in private_key)
+                    file_put_contents($path, json_encode($decoded, JSON_UNESCAPED_SLASHES));
+                    $keyFile = $path;
+                }
+                // Use project_id from JSON if BQ_PROJECT_ID env is not set (e.g. on Render)
+                if (empty($projectId) && ! empty($decoded['project_id'])) {
+                    $projectId = $decoded['project_id'];
+                }
+            }
+        }
+
+        if (empty($projectId) || ! is_string($projectId) || trim($projectId) === '') {
+            return null;
+        }
+        if (! $keyFile || ! is_file($keyFile)) {
+            return null;
+        }
+
         $this->client = new BigQueryClient([
-            'projectId' => config('services.bigquery.project_id'),
-            'keyFilePath' => config('services.bigquery.key_file'),
+            'projectId' => trim($projectId),
+            'keyFilePath' => $keyFile,
         ]);
+
+        return $this->client;
     }
 
     public function runQuery(string $sql): array
     {
-        $queryJob = $this->client->query($sql);
-        $results = $this->client->runQuery($queryJob);
+        $client = $this->getClient();
 
-        if (!$results->isComplete()) {
+        if ($client === null) {
+            return [];
+        }
+
+        $queryJob = $client->query($sql);
+        $results = $client->runQuery($queryJob);
+
+        if (! $results->isComplete()) {
+            throw new \Exception('BigQuery job did not complete.');
+        }
+
+        return iterator_to_array($results->rows());
+    }
+
+    /**
+     * Run a parameterized query (e.g. WHERE month_date = @month_date). Returns [] when credentials are missing.
+     *
+     * @param  array<string, mixed>  $parameters
+     * @return array<int, mixed>
+     */
+    public function runParameterizedQuery(string $sql, array $parameters = []): array
+    {
+        $client = $this->getClient();
+
+        if ($client === null) {
+            return [];
+        }
+
+        $queryJob = $client->query($sql)->parameters($parameters);
+        $results = $client->runQuery($queryJob);
+
+        if (! $results->isComplete()) {
             throw new \Exception('BigQuery job did not complete.');
         }
 

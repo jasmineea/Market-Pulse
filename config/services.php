@@ -15,8 +15,9 @@ return [
     */
 
     'bigquery' => [
-    'project_id' => env('BQ_PROJECT_ID'),
-    'key_file' => env('GOOGLE_APPLICATION_CREDENTIALS'),
+        'project_id' => env('BQ_PROJECT_ID'),
+        'key_file' => env('GOOGLE_APPLICATION_CREDENTIALS'),
+        'key_json' => env('GOOGLE_APPLICATION_CREDENTIALS_JSON'), // Optional: full JSON key for Render etc.
     ],
 
 

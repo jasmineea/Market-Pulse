@@ -2,11 +2,11 @@
 
 namespace App\Services\MarketPulse;
 
-use Google\Cloud\BigQuery\BigQueryClient;
+use App\Services\BigQueryService;
 
 class MarketPulseMetrics
 {
-    public function __construct(private BigQueryClient $bq) {}
+    public function __construct(private BigQueryService $bq) {}
 
     public function forMonth(string $monthDate): array
     {
@@ -45,12 +45,12 @@ class MarketPulseMetrics
           LIMIT 1
         ";
 
-        $job = $this->bq->query($sql)->parameters([
+        $rows = $this->bq->runParameterizedQuery($sql, [
             'month_date' => $monthDate,
         ]);
-
-        $rows = iterator_to_array($this->bq->runQuery($job));
-        if (empty($rows)) return [];
+        if (empty($rows)) {
+            return [];
+        }
 
         $row = (array) $rows[0];
 
@@ -88,11 +88,9 @@ class MarketPulseMetrics
           LIMIT 3
         ";
 
-        $job = $this->bq->query($sql)->parameters([
+        $rows = $this->bq->runParameterizedQuery($sql, [
             'month_date' => $monthDate,
         ]);
-
-        $rows = iterator_to_array($this->bq->runQuery($job));
 
         return array_map(function ($r) {
             $r = (array) $r;
