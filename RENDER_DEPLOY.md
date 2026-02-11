@@ -12,6 +12,15 @@ If the homepage loads but **login and signup don’t work**, set these in your R
 | `SESSION_SECURE_COOKIE` | `true` | Required over HTTPS so the session cookie is sent. |
 | `SESSION_DOMAIN` | Leave **empty** or unset | Lets the cookie work on your Render domain. |
 
+### Using a custom domain (e.g. www.terpinsights.com)
+
+If you point a **custom domain** (e.g. `www.terpinsights.com`) to your Render service and see **419 Page Expired** on login:
+
+1. **Set `APP_URL`** to your canonical URL: `https://www.terpinsights.com` (or `https://terpinsights.com` if you use non-www). This must match the URL users see so redirects and CSRF work.
+2. **Set `SESSION_DOMAIN`** to your root domain with a leading dot: `.terpinsights.com`. That lets the session cookie work for both `www.terpinsights.com` and `terpinsights.com`.
+3. **Keep `SESSION_SECURE_COOKIE`** set to `true` (HTTPS).
+4. **Redeploy** after changing these so the new config is used.
+
 ## Database (you’re using Supabase/Postgres)
 
 - Copy your **production** DB vars from Supabase into Render: `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`.
