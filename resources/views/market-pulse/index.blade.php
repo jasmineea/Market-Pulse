@@ -95,18 +95,13 @@
                     </div>
                     @php
                         $momSales = $mom['total_monthly_sales'] ?? null;
-                        $isUp = $momSales !== null && $momSales > 0;
-                        $colorClass = $momSales === null ? 'text-gray-500' : ($isUp ? 'text-green-500' : 'text-red-500');
+                        $salesUp = $momSales !== null && (float) $momSales > 0;
+                        $salesFlat = $momSales === null || (float) $momSales == 0;
+                        $salesColor = $salesFlat ? 'text-gray-500' : ($salesUp ? 'text-green-500' : 'text-red-500');
                     @endphp
-                    <div class="mt-2 flex items-center gap-1.5 text-sm {{ $colorClass }}">
-                        @if($momSales !== null)
-                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                @if($isUp)
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v7"/>
-                                @else
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
-                                @endif
-                            </svg>
+                    <div class="mt-2 flex items-center gap-1.5 text-sm {{ $salesColor }}">
+                        @if(!$salesFlat)
+                            <i class="fa-solid {{ $salesUp ? 'fa-arrow-up' : 'fa-arrow-down' }} fa-sm shrink-0" aria-hidden="true"></i>
                         @endif
                         <span class="font-medium">{{ $momSales !== null ? number_format($momSales, 1) . '%' : '—' }} vs last month</span>
                     </div>
@@ -115,8 +110,9 @@
                 {{-- Active Licenses --}}
                 @php
                     $momLicenses = $mom['active_licenses'] ?? null;
-                    $licUp = $momLicenses !== null && $momLicenses > 0;
-                    $licColor = $momLicenses === null ? 'text-gray-500' : ($licUp ? 'text-green-500' : 'text-red-500');
+                    $licUp = $momLicenses !== null && (float) $momLicenses > 0;
+                    $licFlat = $momLicenses === null || (float) $momLicenses == 0;
+                    $licColor = $licFlat ? 'text-gray-500' : ($licUp ? 'text-green-500' : 'text-red-500');
                 @endphp
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <div class="text-sm text-gray-500 mb-1">Active Licenses</div>
@@ -128,14 +124,8 @@
                         @endif
                     </div>
                     <div class="mt-2 flex items-center gap-1.5 text-sm {{ $licColor }}">
-                        @if($momLicenses !== null)
-                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                @if($licUp)
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v7"/>
-                                @else
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
-                                @endif
-                            </svg>
+                        @if(!$licFlat)
+                            <i class="fa-solid {{ $licUp ? 'fa-arrow-up' : 'fa-arrow-down' }} fa-sm shrink-0" aria-hidden="true"></i>
                         @endif
                         <span class="font-medium">{{ $momLicenses !== null ? number_format($momLicenses, 1) . '%' : '—' }} vs last month</span>
                     </div>
@@ -153,18 +143,13 @@
                     </div>
                     @php
                         $momAvg = $mom['avg_transaction_value'] ?? null;
-                        $avgUp = $momAvg !== null && $momAvg > 0;
-                        $avgColor = $momAvg === null ? 'text-gray-500' : ($avgUp ? 'text-green-500' : 'text-red-500');
+                        $avgUp = $momAvg !== null && (float) $momAvg > 0;
+                        $avgFlat = $momAvg === null || (float) $momAvg == 0;
+                        $avgColor = $avgFlat ? 'text-gray-500' : ($avgUp ? 'text-green-500' : 'text-red-500');
                     @endphp
                     <div class="mt-2 flex items-center gap-1.5 text-sm {{ $avgColor }}">
-                        @if($momAvg !== null)
-                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                @if($avgUp)
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v7"/>
-                                @else
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
-                                @endif
-                            </svg>
+                        @if(!$avgFlat)
+                            <i class="fa-solid {{ $avgUp ? 'fa-arrow-up' : 'fa-arrow-down' }} fa-sm shrink-0" aria-hidden="true"></i>
                         @endif
                         <span class="font-medium">{{ $momAvg !== null ? number_format($momAvg, 1) . '%' : '—' }} vs last month</span>
                     </div>
@@ -182,18 +167,13 @@
                     </div>
                     @php
                         $momTx = $mom['total_transactions'] ?? null;
-                        $txUp = $momTx !== null && $momTx > 0;
-                        $txColor = $momTx === null ? 'text-gray-500' : ($txUp ? 'text-green-500' : 'text-red-500');
+                        $txUp = $momTx !== null && (float) $momTx > 0;
+                        $txFlat = $momTx === null || (float) $momTx == 0;
+                        $txColor = $txFlat ? 'text-gray-500' : ($txUp ? 'text-green-500' : 'text-red-500');
                     @endphp
                     <div class="mt-2 flex items-center gap-1.5 text-sm {{ $txColor }}">
-                        @if($momTx !== null)
-                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                @if($txUp)
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v7"/>
-                                @else
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l7-7m7 7V3"/>
-                                @endif
-                            </svg>
+                        @if(!$txFlat)
+                            <i class="fa-solid {{ $txUp ? 'fa-arrow-up' : 'fa-arrow-down' }} fa-sm shrink-0" aria-hidden="true"></i>
                         @endif
                         <span class="font-medium">{{ $momTx !== null ? number_format($momTx, 1) . '%' : '—' }} vs last month</span>
                     </div>

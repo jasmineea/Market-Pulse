@@ -32,7 +32,7 @@ class ExportController extends Controller
     {
         $allMonthsMap = [];
         try {
-            $rows = $bq->runQuery("
+            $rows = $bq->runQueryCached('bq.export.available_months', "
               SELECT DISTINCT month_date
               FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_sales_trend`
               ORDER BY month_date DESC

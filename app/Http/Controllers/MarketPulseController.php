@@ -24,7 +24,7 @@ class MarketPulseController extends Controller
         }
         if ($displayMonthDate === null) {
             try {
-                $latestRow = $bq->runQuery("
+                $latestRow = $bq->runQueryCached('bq.market_pulse.latest_month', "
                   SELECT month_date
                   FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_monthly_kpis_joined`
                   ORDER BY month_date DESC
@@ -60,7 +60,7 @@ class MarketPulseController extends Controller
               ORDER BY month_date DESC
               LIMIT 2
             ";
-            $kpiRows = $bq->runQuery($kpiSql);
+            $kpiRows = $bq->runQueryCached('bq.market_pulse.kpi.' . $displayMonthDate, $kpiSql);
             $kpiColumns = ['month_date', 'total_monthly_sales', 'total_transactions', 'avg_transaction_value', 'active_licenses'];
             $currentRow  = isset($kpiRows[0]) ? $this->rowToArray($kpiRows[0], $kpiColumns) : null;
             $previousRow = isset($kpiRows[1]) ? $this->rowToArray($kpiRows[1], $kpiColumns) : null;
@@ -149,14 +149,14 @@ class MarketPulseController extends Controller
             $displayYear = Carbon::parse($latestMonthDate)->year;
             $yearStart = $displayYear . '-01-01';
             $yearEnd = $displayYear . '-12-01';
-            $salesTrendRows = $bq->runQuery("
+            $salesTrendRows = $bq->runQueryCached('bq.market_pulse.sales_trend.' . $displayYear, "
               SELECT month_date, total_sales
               FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_sales_trend`
               WHERE month_date >= DATE('$yearStart') AND month_date <= DATE('$yearEnd')
               ORDER BY month_date ASC
             ");
         } else {
-            $salesTrendRows = $bq->runQuery("
+            $salesTrendRows = $bq->runQueryCached('bq.market_pulse.sales_trend.all', "
               SELECT month_date, total_sales
               FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_sales_trend`
               ORDER BY month_date ASC
@@ -177,7 +177,7 @@ class MarketPulseController extends Controller
         // 2) Active Licenses by Type (bar chart) - show active licenses regardless of month (latest snapshot only)
         $licensesByTypeRows = [];
         try {
-            $licensesByTypeRows = $bq->runQuery("
+            $licensesByTypeRows = $bq->runQueryCached('bq.market_pulse.licenses_by_type', "
               SELECT license_type, active_license_count
               FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_active_licenses_by_type_latest`
               ORDER BY active_license_count DESC
@@ -196,7 +196,7 @@ class MarketPulseController extends Controller
         $categoryRows = [];
         if ($latestMonthDate) {
             try {
-                $categoryRows = $bq->runQuery("
+                $categoryRows = $bq->runQueryCached('bq.market_pulse.category_breakdown.' . $latestMonthDate, "
                   SELECT category, category_revenue
                   FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_category_breakdown_by_month`
                   WHERE month_date = DATE('$latestMonthDate')
@@ -224,7 +224,7 @@ class MarketPulseController extends Controller
         $dispensaryColumns = ['county', 'dispensary_location_count'];
         $dispensaryRows = [];
         try {
-            $rawDispensary = $bq->runQuery("
+            $rawDispensary = $bq->runQueryCached('bq.market_pulse.dispensary_county', "
               SELECT county, SUM(dispensary_location_count) AS dispensary_location_count
               FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_dispensary_locations_by_county_latest`
               GROUP BY county
@@ -254,7 +254,7 @@ class MarketPulseController extends Controller
         // Available months for snapshot dropdown: all months in the database (BigQuery), newest first
         $availableMonths = [];
         try {
-            $rows = $bq->runQuery("
+            $rows = $bq->runQueryCached('bq.market_pulse.available_months', "
               SELECT DISTINCT month_date
               FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_sales_trend`
               ORDER BY month_date DESC

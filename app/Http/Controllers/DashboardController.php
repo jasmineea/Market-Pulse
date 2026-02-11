@@ -37,7 +37,7 @@ class DashboardController extends Controller
               ORDER BY month_date DESC
               LIMIT 2
             ";
-            $kpiRows = $bq->runQuery($kpiSql);
+            $kpiRows = $bq->runQueryCached('bq.dashboard.kpi', $kpiSql);
             $currentRow = isset($kpiRows[0]) ? $this->rowToArray($kpiRows[0], $kpiColumns) : null;
             $previousRow = isset($kpiRows[1]) ? $this->rowToArray($kpiRows[1], $kpiColumns) : null;
 
@@ -62,7 +62,7 @@ class DashboardController extends Controller
             }
 
             // Sales trend: last 12 months for preview
-            $salesRows = $bq->runQuery("
+            $salesRows = $bq->runQueryCached('bq.dashboard.sales_trend', "
               SELECT month_date, total_sales
               FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_sales_trend`
               ORDER BY month_date DESC
@@ -75,7 +75,7 @@ class DashboardController extends Controller
             ];
 
             // License growth: past quarter only (last 3 months), chronological order
-            $licenseRows = $bq->runQuery("
+            $licenseRows = $bq->runQueryCached('bq.dashboard.license_growth', "
               SELECT month_date, active_licenses
               FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_monthly_kpis_joined`
               ORDER BY month_date DESC
@@ -90,7 +90,7 @@ class DashboardController extends Controller
             // Category mix: latest month; top category share computed from chart data so subtitle matches donut
             $latestMonth = $kpi['month_date'] ?? null;
             $dateFilter = $latestMonth ? " WHERE month_date = DATE('" . Carbon::parse($latestMonth)->format('Y-m-d') . "')" : '';
-            $catRows = $bq->runQuery("
+            $catRows = $bq->runQueryCached('bq.dashboard.category_mix.' . ($latestMonth ?? 'latest'), "
               SELECT category, category_sales, share_pct
               FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_category_breakdown_latest`
               $dateFilter
@@ -115,7 +115,7 @@ class DashboardController extends Controller
         // Market Pulse History: all months that have data (last 12), with preview from snapshot or builder
         $historyItems = [];
         try {
-            $monthRows = $bq->runQuery("
+            $monthRows = $bq->runQueryCached('bq.dashboard.history_months', "
               SELECT DISTINCT month_date
               FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_sales_trend`
               ORDER BY month_date DESC

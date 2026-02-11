@@ -3,9 +3,13 @@
 namespace App\Services;
 
 use Google\Cloud\BigQuery\BigQueryClient;
+use Illuminate\Support\Facades\Cache;
 
 class BigQueryService
 {
+    /** Default cache TTL for query results (seconds). Data is monthly so 10 min is fine. */
+    public const CACHE_TTL = 600;
+
     protected ?BigQueryClient $client = null;
 
     /**
@@ -84,6 +88,20 @@ class BigQueryService
         }
 
         return iterator_to_array($results->rows());
+    }
+
+    /**
+     * Run a query and cache the result. Use for read-only dashboard/chart data to improve page speed.
+     *
+     * @param  string  $cacheKey  Unique key (e.g. 'bq.dashboard.kpi'). Include month if data is month-specific.
+     * @param  int  $ttl  Cache TTL in seconds (default 10 min).
+     * @return array<int, mixed>
+     */
+    public function runQueryCached(string $cacheKey, string $sql, int $ttl = self::CACHE_TTL): array
+    {
+        return Cache::remember($cacheKey, $ttl, function () use ($sql): array {
+            return $this->runQuery($sql);
+        });
     }
 
     /**

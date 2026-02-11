@@ -13,7 +13,16 @@ return [
     |
     */
 
-    'name' => env('APP_NAME', 'Laravel'),
+    'name' => env('APP_NAME', 'TerpInsights'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default Meta Description (SEO)
+    |--------------------------------------------------------------------------
+    | Used in layout <meta name="description"> and og:description. Override
+    | per-page via $metaDescription in the view or META_DESCRIPTION in .env.
+    */
+    'meta_description' => env('META_DESCRIPTION', 'Maryland cannabis market intelligence. Clear, monthly insights on sales, licenses, and categories from official MCA data.'),
 
     /*
     |--------------------------------------------------------------------------

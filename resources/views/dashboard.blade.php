@@ -18,8 +18,9 @@
                     <div class="text-sm text-gray-500 mb-1">Mom Change</div>
                     @php
                         $momSales = $mom['total_monthly_sales'] ?? null;
-                        $isUp = $momSales !== null && $momSales > 0;
-                        $colorClass = $momSales === null ? 'text-gray-500' : ($isUp ? 'text-green-500' : 'text-red-500');
+                        $isUp = $momSales !== null && (float) $momSales > 0;
+                        $isFlat = $momSales === null || (float) $momSales == 0;
+                        $colorClass = $isFlat ? 'text-gray-500' : ($isUp ? 'text-green-500' : 'text-red-500');
                     @endphp
                     <div class="text-2xl font-bold {{ $colorClass }}">
                         @if($momSales !== null)
