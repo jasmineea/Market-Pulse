@@ -27,21 +27,29 @@ class PlanGate
 
     /**
      * Whether the given month (YYYY-MM) is within the user's allowed window.
+     * For Starter: when $availableMonths (keys = Y-m, newest first) is provided, allows the first N months from data; otherwise falls back to calendar-based window.
+     *
+     * @param  array<string, string>|null  $availableMonths  ['Y-m' => 'Label', ...] newest first (e.g. from BigQuery)
      */
-    public function isMonthAllowed(string $monthParam, ?User $user): bool
+    public function isMonthAllowed(string $monthParam, ?User $user, ?array $availableMonths = null): bool
     {
         if ($this->hasProAccess($user)) {
             return true;
         }
         $window = $this->allowedMonthsWindow($user);
+        if ($availableMonths !== null && $availableMonths !== []) {
+            $allowedKeys = array_slice(array_keys($availableMonths), 0, $window);
+            return in_array($monthParam, $allowedKeys, true);
+        }
         $allowed = $this->getAllowedMonthValues($window);
         return in_array($monthParam, $allowed, true);
     }
 
     /**
      * Filters all months to only those the user can access.
+     * For Starter: first N months from $allMonths (newest first), so "last 3 months with data" not calendar.
      *
-     * @param  array<string, string>  $allMonths  ['Y-m' => 'Month Label', ...]
+     * @param  array<string, string>  $allMonths  ['Y-m' => 'Month Label', ...] newest first
      * @return array<string, string>
      */
     public function getAllowedMonths(array $allMonths, ?User $user): array
@@ -49,14 +57,15 @@ class PlanGate
         if ($this->hasProAccess($user)) {
             return $allMonths;
         }
-        $allowedValues = $this->getAllowedMonthValues($this->allowedMonthsWindow($user));
-        return array_intersect_key($allMonths, array_flip($allowedValues));
+        $window = $this->allowedMonthsWindow($user);
+        return array_slice($allMonths, 0, $window, true);
     }
 
     /**
      * Split all months into allowed and locked for dropdown display.
+     * For Starter: allowed = first N months from data (newest first), locked = rest.
      *
-     * @param  array<string, string>  $allMonths  ['Y-m' => 'Month Label', ...]
+     * @param  array<string, string>  $allMonths  ['Y-m' => 'Month Label', ...] newest first
      * @return array{allowed: array<string, string>, locked: array<string, string>}
      */
     public function partitionMonths(array $allMonths, ?User $user): array
@@ -64,16 +73,9 @@ class PlanGate
         if ($this->hasProAccess($user)) {
             return ['allowed' => $allMonths, 'locked' => []];
         }
-        $allowedValues = $this->getAllowedMonthValues($this->allowedMonthsWindow($user));
-        $allowed = [];
-        $locked = [];
-        foreach ($allMonths as $ym => $label) {
-            if (in_array($ym, $allowedValues, true)) {
-                $allowed[$ym] = $label;
-            } else {
-                $locked[$ym] = $label;
-            }
-        }
+        $window = $this->allowedMonthsWindow($user);
+        $allowed = array_slice($allMonths, 0, $window, true);
+        $locked = array_slice($allMonths, $window, null, true);
         return ['allowed' => $allowed, 'locked' => $locked];
     }
 

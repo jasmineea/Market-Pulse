@@ -24,9 +24,11 @@ class ExportController extends Controller
     public const EXPORT_TYPES = ['sales', 'category', 'licenses', 'regional'];
 
     /**
-     * Export page: month selector and available exports.
+     * Available months from BigQuery (newest first). Used for export dropdown and plan-gate checks.
+     *
+     * @return array<string, string>  ['Y-m' => 'F Y', ...]
      */
-    public function index(BigQueryService $bq, PlanGate $planGate): View
+    private function getAvailableMonthsMap(BigQueryService $bq): array
     {
         $allMonthsMap = [];
         try {
@@ -44,7 +46,6 @@ class ExportController extends Controller
                 }
             }
         } catch (\Throwable $e) {
-            // Fallback: last 12 months
             for ($i = 0; $i < 12; $i++) {
                 $d = now()->subMonths($i);
                 $allMonthsMap[$d->format('Y-m')] = $d->format('F Y');
@@ -53,6 +54,16 @@ class ExportController extends Controller
         if (empty($allMonthsMap)) {
             $allMonthsMap[now()->format('Y-m')] = now()->format('F Y');
         }
+
+        return $allMonthsMap;
+    }
+
+    /**
+     * Export page: month selector and available exports.
+     */
+    public function index(BigQueryService $bq, PlanGate $planGate): View
+    {
+        $allMonthsMap = $this->getAvailableMonthsMap($bq);
 
         $allowedMonthsMap = $planGate->getAllowedMonths($allMonthsMap, Auth::user());
         $months = [];
@@ -257,7 +268,9 @@ class ExportController extends Controller
         if (in_array('regional', $exports) && ! $planGate->canExportRegional($user)) {
             return redirect()->route('export.index')->with('error', 'County-level exports are available on the Professional plan.');
         }
-        if (! $planGate->isMonthAllowed($month, $user)) {
+        // Use same "first N months from data" as export index / Market Pulse for Starter
+        $availableMonths = $this->getAvailableMonthsMap($bq);
+        if (! $planGate->isMonthAllowed($month, $user, $availableMonths)) {
             return redirect()->route('export.index')->with('error', 'That month is outside your plan\'s access window. Upgrade for full historical access.');
         }
         $monthDate = Carbon::parse($month . '-01')->format('Y-m-d');

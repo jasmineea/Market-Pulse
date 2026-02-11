@@ -285,9 +285,9 @@ class MarketPulseController extends Controller
         }
         $currentMonthValue = $displayMonthDate ? Carbon::parse($displayMonthDate)->format('Y-m') : array_key_first($availableMonths);
 
-        // Plan-based gating: Starter cannot access months outside rolling window
+        // Plan-based gating: Starter can only access first N months that have data (newest first)
         $user = Auth::user();
-        if (! $planGate->isMonthAllowed($currentMonthValue, $user)) {
+        if (! $planGate->isMonthAllowed($currentMonthValue, $user, $availableMonths)) {
             $redirectMonth = $planGate->getLatestAllowedMonth($user, $availableMonths);
             return redirect()->route('market-pulse', $redirectMonth ? ['month' => $redirectMonth] : []);
         }

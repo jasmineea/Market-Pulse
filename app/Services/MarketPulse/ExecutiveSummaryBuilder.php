@@ -65,9 +65,26 @@ class ExecutiveSummaryBuilder
         return 'roughly flat';
     }
 
+    /**
+     * Pluralize a category name for readable summary text (e.g. "Vape Cart" → "Vape Carts").
+     * Does not hardcode names; appends "s" when the name doesn't already end in "s".
+     */
+    private function pluralizeCategory(string $category): string
+    {
+        $trimmed = trim($category);
+        if ($trimmed === '') {
+            return $trimmed;
+        }
+        if (str_ends_with($trimmed, 's')) {
+            return $trimmed;
+        }
+        return $trimmed . 's';
+    }
+
     private function categorySentence(string $top1, ?string $top2, ?string $top3): string
     {
         $parts = array_values(array_filter([$top1, $top2, $top3]));
+        $parts = array_map(fn (string $p) => $this->pluralizeCategory($p), $parts);
         if (count($parts) === 1) return "Revenue was led by {$parts[0]}.";
         if (count($parts) === 2) return "Revenue was led by {$parts[0]}, followed by {$parts[1]}.";
         return "Revenue remained concentrated in {$parts[0]}, followed by {$parts[1]} and {$parts[2]}.";
@@ -77,7 +94,8 @@ class ExecutiveSummaryBuilder
     private function categorySentenceHtml(string $top1, ?string $top2, ?string $top3): string
     {
         $parts = array_values(array_filter([$top1, $top2, $top3]));
-        $strong = fn(string $s) => '<strong class="text-gray-900">' . e($s) . '</strong>';
+        $parts = array_map(fn (string $p) => $this->pluralizeCategory($p), $parts);
+        $strong = fn (string $s) => '<strong class="text-gray-900">' . e($s) . '</strong>';
         if (count($parts) === 1) return 'Revenue was led by ' . $strong($parts[0]) . '.';
         if (count($parts) === 2) return 'Revenue was led by ' . $strong($parts[0]) . ', followed by ' . $strong($parts[1]) . '.';
         return 'Revenue remained concentrated in ' . $strong($parts[0]) . ', followed by ' . $strong($parts[1]) . ' and ' . $strong($parts[2]) . '.';
