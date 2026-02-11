@@ -35,15 +35,13 @@
                 @auth
                     <x-dropdown align="right" width="48">
                         <x-slot name="trigger">
-                            <button class="inline-flex items-center gap-1.5 px-2 py-2 border border-transparent text-sm font-medium rounded-md text-gray-700 bg-white hover:text-gray-900 focus:outline-none transition ease-in-out duration-150">
-                                @php
-                                    $displayName = explode(' ', trim(Auth::user()->name))[0] ?? Auth::user()->name;
-                                @endphp
-                                <span>{{ ucfirst($displayName) }}</span>
-                                <svg class="fill-current h-4 w-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </button>
+                            @php
+                                $displayName = explode(' ', trim(Auth::user()->name))[0] ?? Auth::user()->name;
+                            @endphp
+                            <span>{{ ucfirst($displayName) }}</span>
+                            <svg class="fill-current h-4 w-4 text-gray-500 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" aria-hidden="true">
+                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
                         </x-slot>
 
                         <x-slot name="content">
@@ -51,14 +49,11 @@
                                 {{ __('Profile') }}
                             </x-dropdown-link>
 
-                            <form method="POST" action="{{ route('logout') }}">
+                            <form method="POST" action="{{ route('logout') }}" class="[&_button]:block [&_button]:w-full [&_button]:text-start">
                                 @csrf
-
-                                <x-dropdown-link :href="route('logout')"
-                                        onclick="event.preventDefault();
-                                                    this.closest('form').submit();">
+                                <button type="submit" class="px-4 py-2 text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out w-full text-left">
                                     {{ __('Log Out') }}
-                                </x-dropdown-link>
+                                </button>
                             </form>
                         </x-slot>
                     </x-dropdown>
