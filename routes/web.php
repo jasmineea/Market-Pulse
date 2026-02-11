@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\MarketPulseSnapshotController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\WaitlistController as AdminWaitlistController;
+use App\Http\Controllers\CacheWarmupController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ProfileController;
@@ -15,7 +16,7 @@ use App\Http\Controllers\MarketPulseController;
 Route::get('/market-pulse', [MarketPulseController::class, 'index'])->middleware(['auth', 'verified'])->name('market-pulse');
 
 // Cache warmup: call after deploy so first page loads are fast. Requires ?secret=CACHE_WARMUP_SECRET (404 if not set).
-Route::get('/warmup', CacheWarmupController::class)->name('warmup');
+Route::get('/warmup', [CacheWarmupController::class, '__invoke'])->name('warmup');
 
 // BigQuery env diagnostic (only when APP_DEBUG=true; remove or disable after debugging)
 Route::get('/bigquery-health', function () {
