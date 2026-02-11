@@ -127,4 +127,20 @@ class BigQueryService
 
         return iterator_to_array($results->rows());
     }
+
+    /**
+     * Run a parameterized query and cache the result. Use for month-scoped data (e.g. metrics snapshot, top categories).
+     *
+     * @param  string  $cacheKey  Base key (e.g. 'bq.metrics.snapshot'). Month or params are appended by caller.
+     * @param  int  $ttl  Cache TTL in seconds.
+     * @param  array<string, mixed>  $parameters
+     * @return array<int, mixed>
+     */
+    public function runParameterizedQueryCached(string $cacheKey, string $sql, array $parameters = [], int $ttl = self::CACHE_TTL): array
+    {
+        $key = $cacheKey . '.' . md5(json_encode($parameters));
+        return Cache::remember($key, $ttl, function () use ($sql, $parameters): array {
+            return $this->runParameterizedQuery($sql, $parameters);
+        });
+    }
 }

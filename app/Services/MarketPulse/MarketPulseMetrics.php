@@ -45,7 +45,7 @@ class MarketPulseMetrics
           LIMIT 1
         ";
 
-        $rows = $this->bq->runParameterizedQuery($sql, [
+        $rows = $this->bq->runParameterizedQueryCached('bq.metrics.snapshot', $sql, [
             'month_date' => $monthDate,
         ]);
         if (empty($rows)) {
@@ -88,7 +88,7 @@ class MarketPulseMetrics
           LIMIT 3
         ";
 
-        $rows = $this->bq->runParameterizedQuery($sql, [
+        $rows = $this->bq->runParameterizedQueryCached('bq.metrics.top_categories', $sql, [
             'month_date' => $monthDate,
         ]);
 
