@@ -107,8 +107,13 @@
                                             {{ $item['month_label'] }}
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                            @php
+                                                $monthParam = $item['month_param'] ?? '';
+                                                $viewUrl = $monthParam ? (route('market-pulse') . '?month=' . rawurlencode($monthParam)) : route('market-pulse');
+                                                $printUrl = $monthParam ? (route('market-pulse') . '?month=' . rawurlencode($monthParam) . '&print=1') : (route('market-pulse') . '?print=1');
+                                            @endphp
                                             <span class="inline-flex items-center gap-2 flex-wrap justify-end">
-                                                <a href="{{ route('market-pulse', ['month' => $item['month_param']]) }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium text-[#16a34a] hover:bg-green-50">
+                                                <a href="{{ $viewUrl }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium text-[#16a34a] hover:bg-green-50">
                                                     View
                                                 </a>
                                                 @if($canDownloadFullPdf ?? true)
@@ -117,12 +122,12 @@
                                                             Download PDF
                                                         </a>
                                                     @else
-                                                        <a href="{{ route('market-pulse', ['month' => $item['month_param'], 'print' => 1]) }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100" target="_blank" rel="noopener">
+                                                        <a href="{{ $printUrl }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100" target="_blank" rel="noopener">
                                                             Download
                                                         </a>
                                                     @endif
                                                 @else
-                                                    <a href="{{ route('market-pulse', ['month' => $item['month_param'], 'print' => 1]) }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100" target="_blank" rel="noopener" title="Summary view. Upgrade for polished PDF reports.">
+                                                    <a href="{{ $printUrl }}" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100" target="_blank" rel="noopener" title="Summary view. Upgrade for polished PDF reports.">
                                                         Summary
                                                     </a>
                                                     <a href="{{ route('welcome') }}#pricing" class="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium text-[#16a34a] hover:bg-green-50">
