@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\MarketPulseSnapshotController;
+use App\Http\Controllers\Admin\OutreachContactController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\WaitlistController as AdminWaitlistController;
 use App\Http\Controllers\CacheWarmupController;
@@ -68,6 +69,11 @@ Route::middleware(['auth', 'super_admin'])->prefix('admin')->name('admin.')->gro
 
     Route::get('waitlist', [AdminWaitlistController::class, 'index'])->name('waitlist.index');
     Route::get('waitlist/export', [AdminWaitlistController::class, 'export'])->name('waitlist.export');
+
+    Route::get('outreach/board', [OutreachContactController::class, 'board'])->name('outreach.board');
+    Route::get('outreach/export', [OutreachContactController::class, 'export'])->name('outreach.export');
+    Route::post('outreach/{outreach}/status', [OutreachContactController::class, 'updateStatus'])->name('outreach.update-status');
+    Route::resource('outreach', OutreachContactController::class)->except(['show'])->names('outreach');
 });
 
 require __DIR__.'/auth.php';

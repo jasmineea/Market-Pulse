@@ -62,7 +62,7 @@
 
             {{-- Quick actions --}}
             <h3 class="text-lg font-bold text-gray-900 mb-4">Quick Actions</h3>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
                 <a href="{{ route('admin.users.index') }}" class="block bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md hover:border-[#16a34a]/30 transition-all group">
                     <div class="flex items-start gap-4">
                         <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center shrink-0 group-hover:bg-blue-200 transition-colors">
@@ -108,6 +108,26 @@
                             <span class="inline-flex items-center gap-1 mt-2 text-sm font-medium text-[#16a34a] group-hover:underline">
                                 View waitlist →
                             </span>
+                        </div>
+                    </div>
+                </a>
+                <a href="{{ route('admin.outreach.index') }}" class="block bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md hover:border-[#16a34a]/30 transition-all group">
+                    <div class="flex items-start gap-4">
+                        <div class="w-12 h-12 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0 group-hover:bg-indigo-200 transition-colors">
+                            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-gray-900 group-hover:text-[#16a34a] transition-colors">Outreach CRM</h4>
+                            <p class="text-sm text-gray-500 mt-1">Track LinkedIn prospects, log conversations, and follow up.</p>
+                            @if(($followUpsDueCount ?? 0) > 0)
+                                <a href="{{ route('admin.outreach.index', ['follow_ups_only' => 1]) }}" class="inline-block mt-2 text-sm font-medium text-amber-600 hover:underline">{{ number_format($followUpsDueCount) }} follow-ups due →</a>
+                            @else
+                                <span class="inline-flex items-center gap-1 mt-2 text-sm font-medium text-[#16a34a] group-hover:underline">
+                                    Go to outreach →
+                                </span>
+                            @endif
                         </div>
                     </div>
                 </a>

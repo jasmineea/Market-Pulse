@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\MarketPulseSnapshot;
+use App\Models\OutreachContact;
 use App\Models\User;
 use App\Models\WaitlistSignup;
 use Illuminate\View\View;
@@ -20,6 +21,8 @@ class AdminController extends Controller
             'snapshotCount' => MarketPulseSnapshot::count(),
             'publishedSnapshotCount' => MarketPulseSnapshot::published()->count(),
             'waitlistCount' => WaitlistSignup::count(),
+            'outreachContactCount' => OutreachContact::count(),
+            'followUpsDueCount' => OutreachContact::dueForFollowUp()->count(),
         ]);
     }
 }
