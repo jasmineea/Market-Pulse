@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -13,10 +14,16 @@ class AuthenticatedSessionController extends Controller
 {
     /**
      * Display the login view.
+     * Disable caching so mobile/CDN never serve a stale page with an old CSRF token (avoids 419 on submit).
      */
-    public function create(): View
+    public function create(): Response
     {
-        return view('auth.login');
+        return response()
+            ->view('auth.login')
+            ->withHeaders([
+                'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+                'Pragma' => 'no-cache',
+            ]);
     }
 
     /**
