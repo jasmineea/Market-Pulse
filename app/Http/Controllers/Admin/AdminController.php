@@ -23,6 +23,9 @@ class AdminController extends Controller
             'waitlistCount' => WaitlistSignup::count(),
             'outreachContactCount' => OutreachContact::count(),
             'followUpsDueCount' => OutreachContact::dueForFollowUp()->count(),
+            'inboundCollaborationPendingCount' => OutreachContact::where('source', 'ai_lab_collaboration')
+                ->where('status', 'Inbound Request')
+                ->count(),
         ]);
     }
 }

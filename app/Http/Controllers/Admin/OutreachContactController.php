@@ -20,11 +20,13 @@ class OutreachContactController extends Controller
     {
         $query = OutreachContact::query()->latest('updated_at');
 
+        $view = $request->input('view', 'all');
+
         if ($request->boolean('follow_ups_only')) {
             $query->dueForFollowUp();
         }
 
-        if ($request->filled('status')) {
+        if ($view !== 'ai_lab' && $request->filled('status')) {
             $query->where('status', $request->input('status'));
         }
 
@@ -48,9 +50,22 @@ class OutreachContactController extends Controller
             $query->where('organization', 'like', '%' . $request->input('organization') . '%');
         }
 
+        // View toggle: all | outreach | ai_lab
+        if ($view === 'outreach') {
+            $query->where(function ($q) {
+                $q->where('source', '!=', 'ai_lab_collaboration')
+                    ->orWhereNull('source');
+            });
+        } elseif ($view === 'ai_lab') {
+            $query->where('source', 'ai_lab_collaboration')
+                ->where('status', 'Inbound Request');
+        } elseif ($request->filled('source') && $view === 'all') {
+            $query->where('source', $request->input('source'));
+        }
+
         $sort = $request->input('sort', 'updated_at');
         $direction = $request->input('direction', 'desc');
-        if (in_array($sort, ['name', 'status', 'role', 'persona_type', 'operator_type', 'priority', 'follow_up_date', 'date_contacted', 'updated_at'], true)) {
+        if (in_array($sort, ['name', 'email', 'status', 'role', 'persona_type', 'operator_type', 'priority', 'follow_up_date', 'date_contacted', 'updated_at'], true)) {
             $query->orderBy($sort, $direction === 'asc' ? 'asc' : 'desc');
         }
 
@@ -175,12 +190,22 @@ class OutreachContactController extends Controller
     public function export(Request $request): StreamedResponse
     {
         $query = OutreachContact::query()->latest('updated_at');
+        $view = $request->input('view', 'all');
 
         if ($request->boolean('follow_ups_only')) {
             $query->dueForFollowUp();
         }
-        if ($request->filled('status')) {
+        if ($view !== 'ai_lab' && $request->filled('status')) {
             $query->where('status', $request->input('status'));
+        }
+        if ($view === 'outreach') {
+            $query->where(function ($q) {
+                $q->where('source', '!=', 'ai_lab_collaboration')->orWhereNull('source');
+            });
+        } elseif ($view === 'ai_lab') {
+            $query->where('source', 'ai_lab_collaboration')->where('status', 'Inbound Request');
+        } elseif ($request->filled('source')) {
+            $query->where('source', $request->input('source'));
         }
         if ($request->filled('role')) {
             $query->where('role', $request->input('role'));
@@ -204,7 +229,7 @@ class OutreachContactController extends Controller
         return Response::streamDownload(function () use ($contacts) {
             $out = fopen('php://output', 'w');
             fputcsv($out, [
-                'id', 'name', 'linkedin_url', 'persona_type', 'operator_type', 'role', 'organization', 'location', 'why_selected',
+                'id', 'name', 'email', 'linkedin_url', 'persona_type', 'operator_type', 'role', 'organization', 'location', 'why_selected',
                 'priority', 'source', 'status', 'date_contacted', 'response_summary', 'follow_up_date',
                 'notes', 'created_at', 'updated_at',
             ]);
@@ -212,6 +237,7 @@ class OutreachContactController extends Controller
                 fputcsv($out, [
                     $c->id,
                     $c->name,
+                    $c->email,
                     $c->linkedin_url,
                     $c->persona_type,
                     $c->operator_type,
@@ -249,7 +275,8 @@ class OutreachContactController extends Controller
 
         return $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'linkedin_url' => ['required', 'string', 'url', 'max:500'],
+            'email' => ['nullable', 'email', 'max:255'],
+            'linkedin_url' => ['nullable', 'string', 'url', 'max:500', Rule::requiredWithout('email')],
             'persona_type' => ['required', 'string', Rule::in($personaTypes)],
             'operator_type' => [
                 'nullable',
@@ -279,6 +306,7 @@ class OutreachContactController extends Controller
     private function computeMetrics(): array
     {
         $total = OutreachContact::count();
+        // DMs Sent: outbound contacts only (Inbound Request excluded by design)
         $dmSent = OutreachContact::whereIn('status', [
             'DM Sent', 'Replied', 'Call Scheduled', 'Call Completed', 'Not a Fit', 'Converted (Waitlist / User)',
         ])->count();

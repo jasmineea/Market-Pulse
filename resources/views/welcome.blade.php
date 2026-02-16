@@ -10,7 +10,7 @@
                 <p class="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-10">
                 Clear, monthly insights on Maryland’s cannabis market — designed for policymakers, researchers, journalists, and operators who need answers, not spreadsheets.
                 </p>
-                <p class="text-sm text-gray-500 max-w-2xl mx-auto mb-10">Powered by official Maryland Cannabis Administration (MCA) data and transparent market analysis.</p>
+                <p class="mx-auto mb-10"">Powered by official Maryland Cannabis Administration (MCA) data and transparent market analysis.</p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     <a href="{{ route('register') }}" class="inline-flex justify-center items-center px-6 py-3.5 rounded-md bg-[#16a34a] text-white font-medium hover:bg-[#15803d] transition-colors">Get Free Market Access</a>
                     <a href="{{ route('login') }}" class="inline-flex justify-center items-center px-6 py-3.5 rounded-md border-2 border-gray-300 text-gray-800 font-medium hover:border-gray-400 hover:bg-gray-50 transition-colors">Log in</a>
@@ -53,6 +53,17 @@
                         </div>
                     @endforeach
                 </div>
+            </div>
+        </section>
+
+        {{-- AI Lab --}}
+        <section class="py-16 md:py-24 px-6">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Building Ethical AI for Regulated Markets</h2>
+                <p class="text-gray-600 text-center max-w-2xl mx-auto mb-8">Beyond market intelligence, TerpInsights serves as a live testbed for fairness-aware forecasting, transparency standards, and stress-tested AI systems within regulated public markets.</p>
+                <a href="{{ route('ai-lab') }}" class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-md border-2 border-[#16a34a] text-[#16a34a] font-medium hover:bg-[#16a34a]/5 transition-colors">
+                    <span>→ Explore the AI Lab</span>
+                </a>
             </div>
         </section>
 

@@ -46,4 +46,40 @@ return [
         'ancillary_service_provider' => 'Ancillary Service Provider',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | AI Lab Collaboration Form Options
+    |--------------------------------------------------------------------------
+    */
+
+    'ai_lab_collaboration_types' => [
+        'research_collaboration' => 'Research collaboration',
+        'pilot_partner' => 'Pilot partner',
+        'faculty_sponsorship_mii' => 'Faculty sponsorship / MII alignment',
+        'data_sharing' => 'Data sharing agreement',
+        'methodology_review' => 'Methodology review / validation',
+        'student_project' => 'Student project / capstone',
+        'policy_consultation' => 'Policy consultation',
+        'other' => 'Other',
+    ],
+
+    'ai_lab_areas_of_interest' => [
+        'forecasting' => 'Forecast Lab',
+        'fairness' => 'Fairness Audit',
+        'stress_testing' => 'Stress Testing',
+        'equity_metrics' => 'Equity & Access Metrics',
+        'transparency' => 'Data & Method Transparency',
+        'governance' => 'AI governance standards',
+        'bias_remediation' => 'Bias detection & remediation',
+        'other' => 'Other',
+    ],
+
+    'ai_lab_timelines' => [
+        'immediate' => 'Within 1–3 months',
+        'quarter' => 'Within this quarter',
+        'semester' => 'Within this semester',
+        'year' => 'Within this year',
+        'exploratory' => 'Exploratory / no fixed timeline',
+    ],
+
 ];

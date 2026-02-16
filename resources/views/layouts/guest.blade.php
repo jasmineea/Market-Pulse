@@ -65,9 +65,13 @@
         {{-- Header: logo + nav (different when auth vs guest) --}}
         <header class="border-b border-gray-200 bg-white" x-data="{ mobileMenuOpen: false }">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-4">
-                <x-market-pulse-logo class="min-w-0" />
+                {{-- Logo --}}
+                <div class="flex items-center min-w-0 shrink-0">
+                    <x-market-pulse-logo />
+                </div>
                 {{-- Desktop nav --}}
                 <nav class="hidden md:flex items-center gap-5 lg:gap-6 shrink-0">
+                    <x-nav-link :href="route('ai-lab')" :active="request()->routeIs('ai-lab')">AI Lab</x-nav-link>
                     @auth
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">{{ __('Dashboard') }}</x-nav-link>
                         <x-nav-link :href="route('market-pulse')" :active="request()->routeIs('market-pulse')">Market Pulse</x-nav-link>
@@ -105,6 +109,7 @@
             {{-- Mobile menu panel --}}
             <div x-show="mobileMenuOpen" x-cloak x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-1" class="md:hidden border-t border-gray-200 bg-gray-50">
                 <nav class="max-w-6xl mx-auto px-4 py-4 flex flex-col gap-1">
+                    <x-responsive-nav-link :href="route('ai-lab')" @click="mobileMenuOpen = false" :active="request()->routeIs('ai-lab')">AI Lab</x-responsive-nav-link>
                     @auth
                         <x-responsive-nav-link :href="route('dashboard')" @click="mobileMenuOpen = false" :active="request()->routeIs('dashboard')">{{ __('Dashboard') }}</x-responsive-nav-link>
                         <x-responsive-nav-link :href="route('market-pulse')" @click="mobileMenuOpen = false" :active="request()->routeIs('market-pulse')">Market Pulse</x-responsive-nav-link>

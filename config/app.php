@@ -65,6 +65,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Asset URL (for Vite, asset(), etc.)
+    |--------------------------------------------------------------------------
+    | When behind a proxy (e.g. Render + custom domain), set this to the same
+    | as APP_URL so script/link tags use your public domain and avoid CORS.
+    |
+    */
+
+    'asset_url' => env('ASSET_URL'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

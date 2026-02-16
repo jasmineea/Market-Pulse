@@ -111,7 +111,14 @@
                         </div>
                     </div>
                 </a>
-                <a href="{{ route('admin.outreach.index') }}" class="block bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md hover:border-[#16a34a]/30 transition-all group">
+                @php
+                    $outreachHref = ($inboundCollaborationPendingCount ?? 0) > 0
+                        ? route('admin.outreach.index', ['view' => 'ai_lab'])
+                        : (($followUpsDueCount ?? 0) > 0
+                            ? route('admin.outreach.index', ['follow_ups_only' => 1])
+                            : route('admin.outreach.index'));
+                @endphp
+                <a href="{{ $outreachHref }}" class="block bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md hover:border-[#16a34a]/30 transition-all group">
                     <div class="flex items-start gap-4">
                         <div class="w-12 h-12 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0 group-hover:bg-indigo-200 transition-colors">
                             <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -121,8 +128,10 @@
                         <div>
                             <h4 class="font-semibold text-gray-900 group-hover:text-[#16a34a] transition-colors">Outreach CRM</h4>
                             <p class="text-sm text-gray-500 mt-1">Track LinkedIn prospects, log conversations, and follow up.</p>
-                            @if(($followUpsDueCount ?? 0) > 0)
-                                <a href="{{ route('admin.outreach.index', ['follow_ups_only' => 1]) }}" class="inline-block mt-2 text-sm font-medium text-amber-600 hover:underline">{{ number_format($followUpsDueCount) }} follow-ups due →</a>
+                            @if(($inboundCollaborationPendingCount ?? 0) > 0)
+                                <span class="inline-block mt-2 text-sm font-medium text-[#16a34a] group-hover:underline">{{ number_format($inboundCollaborationPendingCount) }} Collaboration Request{{ $inboundCollaborationPendingCount !== 1 ? 's' : '' }} Pending →</span>
+                            @elseif(($followUpsDueCount ?? 0) > 0)
+                                <span class="inline-block mt-2 text-sm font-medium text-amber-600 group-hover:underline">{{ number_format($followUpsDueCount) }} follow-ups due →</span>
                             @else
                                 <span class="inline-flex items-center gap-1 mt-2 text-sm font-medium text-[#16a34a] group-hover:underline">
                                     Go to outreach →

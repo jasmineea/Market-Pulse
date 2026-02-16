@@ -27,10 +27,18 @@
                             class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#16a34a] focus:ring-[#16a34a]">
                     </div>
 
-                    <div>
-                        <label for="linkedin_url" class="block text-sm font-medium text-gray-700 mb-1">LinkedIn URL <span class="text-red-500">*</span></label>
-                        <input type="url" id="linkedin_url" name="linkedin_url" value="{{ old('linkedin_url') }}" required placeholder="https://linkedin.com/in/..."
-                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#16a34a] focus:ring-[#16a34a]">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="email" name="email" value="{{ old('email') }}" placeholder="email@example.com"
+                                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#16a34a] focus:ring-[#16a34a]">
+                        </div>
+                        <div>
+                            <label for="linkedin_url" class="block text-sm font-medium text-gray-700 mb-1">LinkedIn URL</label>
+                            <input type="url" id="linkedin_url" name="linkedin_url" value="{{ old('linkedin_url') }}" placeholder="https://linkedin.com/in/..."
+                                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-[#16a34a] focus:ring-[#16a34a]">
+                            <p class="text-xs text-gray-500 mt-0.5">Provide at least one of Email or LinkedIn</p>
+                        </div>
                     </div>
 
                     <div>

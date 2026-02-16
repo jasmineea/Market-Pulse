@@ -7,8 +7,11 @@
                 <!-- Logo: same as welcome page (green rounded square + trend line + TerpInsights) -->
                 <x-market-pulse-logo :href="url('/')" class="shrink-0" />
 
-                <!-- Navigation Links: Dashboard, Market Pulse, Export Data, Admin (super admin only) -->
+                <!-- Navigation Links: AI Lab (core brand), Dashboard, Market Pulse, Export Data, Admin (super admin only) -->
                 <div class="hidden space-x-8 sm:flex sm:ms-10">
+                    <x-nav-link :href="route('ai-lab')" :active="request()->routeIs('ai-lab')">
+                        AI Lab
+                    </x-nav-link>
                     @auth
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                             {{ __('Dashboard') }}
@@ -92,6 +95,9 @@
         class="sm:hidden border-t border-gray-200 bg-white shadow-sm"
         style="display: none;">
         <div class="pt-2 pb-3 space-y-1">
+            <x-responsive-nav-link :href="route('ai-lab')" :active="request()->routeIs('ai-lab')">
+                AI Lab
+            </x-responsive-nav-link>
             @auth
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                     {{ __('Dashboard') }}

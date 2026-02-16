@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SnapshotController;
+use App\Http\Controllers\AiLabCollaborationController;
 use App\Http\Controllers\WaitlistController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MarketPulseController;
@@ -40,6 +41,15 @@ Route::get('/bigquery-health', function () {
 Route::get('/', function () {
     return view('welcome');
 })->name('welcome');
+
+Route::get('/ai-lab', function () {
+    return view('ai-lab');
+})->name('ai-lab');
+
+Route::get('/ai-lab/collaborate', [AiLabCollaborationController::class, 'show'])->name('ai-lab.collaborate');
+Route::post('/ai-lab/collaborate', [AiLabCollaborationController::class, 'store'])
+    ->middleware('throttle:10,1')
+    ->name('ai-lab.collaborate.store');
 
 Route::post('/waitlist', [WaitlistController::class, 'store'])->name('waitlist.store')->middleware('throttle:10,1');
 

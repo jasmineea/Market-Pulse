@@ -20,6 +20,7 @@ class OutreachContact extends Model
         'Call Completed',
         'Not a Fit',
         'Converted (Waitlist / User)',
+        'Inbound Request',  // AI Lab collaboration requests (no prior outreach)
     ];
 
     /** Priority enum. */
@@ -44,6 +45,7 @@ class OutreachContact extends Model
      */
     protected $fillable = [
         'name',
+        'email',
         'linkedin_url',
         'persona_type',
         'operator_type',
