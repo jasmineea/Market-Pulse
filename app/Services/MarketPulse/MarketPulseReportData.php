@@ -4,15 +4,18 @@ namespace App\Services\MarketPulse;
 
 use App\Models\MarketPulseSnapshot;
 use App\Services\BigQueryService;
+use App\Services\MarketPulseDataService;
 use Carbon\Carbon;
 
 /**
  * Builds Market Pulse report data for a given month (shared by web view and PDF export).
+ * Uses local DB when synced data exists, otherwise BigQuery.
  */
 class MarketPulseReportData
 {
     public function __construct(
         private BigQueryService $bq,
+        private MarketPulseDataService $dataService,
         private MarketPulseMetrics $metrics,
         private ExecutiveSummaryBuilder $builder
     ) {}
@@ -31,14 +34,17 @@ class MarketPulseReportData
         $previousRow = null;
         $kpiColumns = ['month_date', 'total_monthly_sales', 'total_transactions', 'avg_transaction_value', 'active_licenses'];
 
+        $useLocal = $this->dataService->hasLocalData();
         if ($displayMonthDate !== null) {
-            $kpiRows = $this->bq->runQuery("
-              SELECT month_date, total_monthly_sales, total_transactions, avg_transaction_value, active_licenses
-              FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_monthly_kpis_joined`
-              WHERE month_date <= DATE('$displayMonthDate')
-              ORDER BY month_date DESC
-              LIMIT 2
-            ");
+            $kpiRows = $useLocal
+                ? $this->dataService->getKpiForMonth($displayMonthDate)
+                : $this->bq->runQueryCached('bq.market_pulse.kpi.' . $displayMonthDate, "
+                  SELECT month_date, total_monthly_sales, total_transactions, avg_transaction_value, active_licenses
+                  FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_monthly_kpis_joined`
+                  WHERE month_date <= DATE('$displayMonthDate')
+                  ORDER BY month_date DESC
+                  LIMIT 2
+                ");
             $currentRow = isset($kpiRows[0]) ? $this->rowToArray($kpiRows[0], $kpiColumns) : null;
             $previousRow = isset($kpiRows[1]) ? $this->rowToArray($kpiRows[1], $kpiColumns) : null;
         }
@@ -90,13 +96,13 @@ class MarketPulseReportData
             $displayYear = Carbon::parse($latestMonthDate)->year;
             $yearStart = $displayYear . '-01-01';
             $yearEnd = $displayYear . '-12-01';
-            $salesTrendRows = $this->bq->runQuery("
+            $salesTrendRows = $this->bq->runQueryCached('bq.market_pulse.sales_trend.' . $displayYear, "
               SELECT month_date, total_sales FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_sales_trend`
               WHERE month_date >= DATE('$yearStart') AND month_date <= DATE('$yearEnd')
               ORDER BY month_date ASC
             ");
         } else {
-            $salesTrendRows = $this->bq->runQuery("
+            $salesTrendRows = $this->bq->runQueryCached('bq.market_pulse.sales_trend.all', "
               SELECT month_date, total_sales FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_sales_trend`
               ORDER BY month_date ASC
             ");
@@ -106,15 +112,17 @@ class MarketPulseReportData
             'values' => array_map(fn($r) => isset($r['total_sales']) && $r['total_sales'] !== null ? (float) $r['total_sales'] : 0.0, $salesTrendRows),
         ];
 
-        $licensesByTypeRows = [];
-        try {
-            $licensesByTypeRows = $this->bq->runQuery("
-              SELECT license_type, active_license_count
-              FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_active_licenses_by_type_latest`
-              ORDER BY active_license_count DESC
-            ");
-        } catch (\Throwable $e) {
-            // leave empty
+        $licensesByTypeRows = $useLocal ? $this->dataService->getLicensesByType() : [];
+        if (! $useLocal) {
+            try {
+                $licensesByTypeRows = $this->bq->runQueryCached('bq.market_pulse.licenses_by_type', "
+                  SELECT license_type, active_license_count
+                  FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_active_licenses_by_type_latest`
+                  ORDER BY active_license_count DESC
+                ");
+            } catch (\Throwable $e) {
+                // leave empty
+            }
         }
         $licensesByType = [
             'labels' => array_map(fn($r) => (string) ($r['license_type'] ?? $r['business_type'] ?? ''), $licensesByTypeRows),
@@ -123,15 +131,19 @@ class MarketPulseReportData
 
         $categoryRows = [];
         if ($latestMonthDate) {
-            try {
-                $categoryRows = $this->bq->runQuery("
-                  SELECT category, category_revenue
-                  FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_category_breakdown_by_month`
-                  WHERE month_date = DATE('$latestMonthDate')
-                  ORDER BY category_revenue DESC
-                ");
-            } catch (\Throwable $e) {
-                // leave empty
+            if ($useLocal) {
+                $categoryRows = $this->dataService->getCategoryBreakdown($latestMonthDate);
+            } else {
+                try {
+                    $categoryRows = $this->bq->runQueryCached('bq.market_pulse.category_breakdown.' . $latestMonthDate, "
+                      SELECT category, category_revenue
+                      FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_category_breakdown_by_month`
+                      WHERE month_date = DATE('$latestMonthDate')
+                      ORDER BY category_revenue DESC
+                    ");
+                } catch (\Throwable $e) {
+                    // leave empty
+                }
             }
         }
         $categoryValues = array_map(fn($r) => isset($r['category_revenue']) && $r['category_revenue'] !== null ? (float) $r['category_revenue'] : 0.0, $categoryRows);
@@ -144,19 +156,21 @@ class MarketPulseReportData
         ];
 
         $dispensaryColumns = ['county', 'dispensary_location_count'];
-        $dispensaryRows = [];
-        try {
-            $rawDispensary = $this->bq->runQuery("
-              SELECT county, SUM(dispensary_location_count) AS dispensary_location_count
-              FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_dispensary_locations_by_county_latest`
-              GROUP BY county
-              ORDER BY dispensary_location_count DESC
-            ");
-            foreach ($rawDispensary as $row) {
-                $dispensaryRows[] = $this->rowToArray($row, $dispensaryColumns);
+        $dispensaryRows = $useLocal ? $this->dataService->getDispensaryByCounty() : [];
+        if (! $useLocal) {
+            try {
+                $rawDispensary = $this->bq->runQueryCached('bq.market_pulse.dispensary_county', "
+                  SELECT county, SUM(dispensary_location_count) AS dispensary_location_count
+                  FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_dispensary_locations_by_county_latest`
+                  GROUP BY county
+                  ORDER BY dispensary_location_count DESC
+                ");
+                foreach ($rawDispensary as $row) {
+                    $dispensaryRows[] = $this->rowToArray($row, $dispensaryColumns);
+                }
+            } catch (\Throwable $e) {
+                // leave empty
             }
-        } catch (\Throwable $e) {
-            // leave empty
         }
         $dispensaryByCounty = empty($dispensaryRows)
             ? ['labels' => ['Unknown'], 'values' => [0]]

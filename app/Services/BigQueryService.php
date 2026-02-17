@@ -10,6 +10,9 @@ class BigQueryService
     /** Default cache TTL for query results (seconds). Monthly data — 30 min reduces BQ load and speeds up pages. */
     public const CACHE_TTL = 1800;
 
+    /** TTL for dashboard-only keys (2 hours); data changes only when new month lands. */
+    public const CACHE_TTL_DASHBOARD = 7200;
+
     protected ?BigQueryClient $client = null;
 
     /**
@@ -19,6 +22,14 @@ class BigQueryService
      */
     public function __construct()
     {
+    }
+
+    /**
+     * Whether BigQuery credentials are configured (for sync command / health checks).
+     */
+    public function isConfigured(): bool
+    {
+        return $this->getClient() !== null;
     }
 
     /**

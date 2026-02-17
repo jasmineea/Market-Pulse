@@ -64,7 +64,18 @@ The app caches BigQuery results for 30 minutes so dashboard and Market Pulse sta
 **What we do in code**
 
 - `start.sh` no longer runs `php artisan cache:clear`, so BigQuery cache is **not** wiped on every deploy/start. Config/route/view caches are still cleared and rebuilt so env changes take effect.
-- BigQuery cache TTL is 30 minutes so once cache is warm, pages stay fast longer.
+- BigQuery cache TTL is 30 minutes (longer for dashboard-only keys) so once cache is warm, pages stay fast longer.
+
+**Optional: use database cache so cache survives restarts**
+
+- Set **`CACHE_STORE`** to **`database`** in Render Environment. The app already includes a `cache` table migration (from `php artisan cache:table`); migrations run on deploy, so the table will exist. BigQuery result cache will then be stored in your Postgres DB and persist across deploys and restarts, reducing cold loads.
+
+**Optional: sync BigQuery to app DB for fastest dashboard/Market Pulse**
+
+- BigQuery remains the **source of truth**. The app can sync BQ data into the same database as your users so dashboard and Market Pulse read from local DB (no BQ on request). Run the sync on a schedule (e.g. daily):
+  - **Artisan:** `php artisan market-pulse:sync-bigquery` (run from cron or Render cron job).
+  - **Laravel scheduler:** The app schedules this command daily in `routes/console.php`. Ensure the scheduler is running (e.g. one worker process or external cron calling `php artisan schedule:run` every minute).
+- After the first successful sync, dashboard and Market Pulse will use local data. Optional: show “Data as of &lt;last_synced_at&gt;” in the UI via `MarketPulseDataService::getLastSyncedAt()`.
 
 **Optional: warm the cache after deploy**
 

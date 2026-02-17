@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\MarketPulseSnapshot;
 use App\Services\BigQueryService;
+use App\Services\MarketPulseDataService;
 use App\Services\PlanGate;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ class DashboardController extends Controller
     /**
      * Dashboard: Current Market Status (KPIs), Trend Previews (3 charts), Market Pulse History (all months with data).
      */
-    public function index(Request $request, BigQueryService $bq, PlanGate $planGate): View
+    public function index(Request $request, BigQueryService $bq, MarketPulseDataService $dataService, PlanGate $planGate): View
     {
         $kpi = null;
         $mom = [
@@ -29,15 +30,18 @@ class DashboardController extends Controller
         $licenseGrowthPreview = ['labels' => [], 'values' => []];
         $categoryMixPreview = ['labels' => [], 'values' => [], 'topLabel' => null, 'topPct' => null];
 
+        $useLocal = $dataService->hasLocalData();
+
         try {
             $kpiColumns = ['month_date', 'total_monthly_sales', 'total_transactions', 'avg_transaction_value', 'active_licenses'];
-            $kpiSql = "
-              SELECT month_date, total_monthly_sales, total_transactions, avg_transaction_value, active_licenses
-              FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_monthly_kpis_joined`
-              ORDER BY month_date DESC
-              LIMIT 2
-            ";
-            $kpiRows = $bq->runQueryCached('bq.dashboard.kpi', $kpiSql);
+            $kpiRows = $useLocal
+                ? $dataService->getKpisLatest(2)
+                : $bq->runQueryCached('bq.dashboard.kpi', "
+                  SELECT month_date, total_monthly_sales, total_transactions, avg_transaction_value, active_licenses
+                  FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_monthly_kpis_joined`
+                  ORDER BY month_date DESC
+                  LIMIT 2
+                ");
             $currentRow = isset($kpiRows[0]) ? $this->rowToArray($kpiRows[0], $kpiColumns) : null;
             $previousRow = isset($kpiRows[1]) ? $this->rowToArray($kpiRows[1], $kpiColumns) : null;
 
@@ -62,26 +66,34 @@ class DashboardController extends Controller
             }
 
             // Sales trend: last 12 months for preview
-            $salesRows = $bq->runQueryCached('bq.dashboard.sales_trend', "
-              SELECT month_date, total_sales
-              FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_sales_trend`
-              ORDER BY month_date DESC
-              LIMIT 12
-            ");
-            $salesRows = array_reverse($salesRows);
+            $salesRows = $useLocal
+                ? array_reverse($dataService->getSalesTrend(null, 12))
+                : $bq->runQueryCached('bq.dashboard.sales_trend', "
+                  SELECT month_date, total_sales
+                  FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_sales_trend`
+                  ORDER BY month_date DESC
+                  LIMIT 12
+                ", BigQueryService::CACHE_TTL_DASHBOARD);
+            if (! $useLocal) {
+                $salesRows = array_reverse($salesRows);
+            }
             $salesTrendPreview = [
                 'labels' => array_map(fn($r) => isset($r['month_date']) && $r['month_date'] ? Carbon::parse($r['month_date'])->format('M Y') : '', $salesRows),
                 'values' => array_map(fn($r) => isset($r['total_sales']) && $r['total_sales'] !== null ? (float) $r['total_sales'] : 0.0, $salesRows),
             ];
 
             // License growth: past quarter only (last 3 months), chronological order
-            $licenseRows = $bq->runQueryCached('bq.dashboard.license_growth', "
-              SELECT month_date, active_licenses
-              FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_monthly_kpis_joined`
-              ORDER BY month_date DESC
-              LIMIT 3
-            ");
-            $licenseRows = array_reverse($licenseRows);
+            $licenseRows = $useLocal
+                ? array_reverse($dataService->getLicenseGrowth(3))
+                : $bq->runQueryCached('bq.dashboard.license_growth', "
+                  SELECT month_date, active_licenses
+                  FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_monthly_kpis_joined`
+                  ORDER BY month_date DESC
+                  LIMIT 3
+                ");
+            if (! $useLocal) {
+                $licenseRows = array_reverse($licenseRows);
+            }
             $licenseGrowthPreview = [
                 'labels' => array_map(fn($r) => isset($r['month_date']) && $r['month_date'] ? Carbon::parse($r['month_date'])->format('M Y') : '', $licenseRows),
                 'values' => array_map(fn($r) => isset($r['active_licenses']) && $r['active_licenses'] !== null ? (int) $r['active_licenses'] : 0, $licenseRows),
@@ -89,13 +101,15 @@ class DashboardController extends Controller
 
             // Category mix: latest month; top category share computed from chart data so subtitle matches donut
             $latestMonth = $kpi['month_date'] ?? null;
-            $dateFilter = $latestMonth ? " WHERE month_date = DATE('" . Carbon::parse($latestMonth)->format('Y-m-d') . "')" : '';
-            $catRows = $bq->runQueryCached('bq.dashboard.category_mix.' . ($latestMonth ?? 'latest'), "
-              SELECT category, category_sales, share_pct
-              FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_category_breakdown_latest`
-              $dateFilter
-              ORDER BY category_sales DESC
-            ");
+            $latestMonthStr = $latestMonth ? Carbon::parse($latestMonth)->format('Y-m-d') : null;
+            $catRows = $useLocal && $latestMonthStr
+                ? $dataService->getCategoryMix($latestMonthStr)
+                : $bq->runQueryCached('bq.dashboard.category_mix.' . ($latestMonth ?? 'latest'), "
+                  SELECT category, category_sales, share_pct
+                  FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_category_breakdown_latest`
+                  " . ($latestMonth ? " WHERE month_date = DATE('" . Carbon::parse($latestMonth)->format('Y-m-d') . "')" : '') . "
+                  ORDER BY category_sales DESC
+                ", BigQueryService::CACHE_TTL_DASHBOARD);
             $catValues = array_map(fn($r) => isset($r['category_sales']) ? (float) $r['category_sales'] : 0.0, $catRows);
             $totalSales = array_sum($catValues);
             $topPct = null;
@@ -115,12 +129,14 @@ class DashboardController extends Controller
         // Market Pulse History: all months that have data (last 12), with preview from snapshot or builder
         $historyItems = [];
         try {
-            $monthRows = $bq->runQueryCached('bq.dashboard.history_months', "
-              SELECT DISTINCT month_date
-              FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_sales_trend`
-              ORDER BY month_date DESC
-              LIMIT 12
-            ");
+            $monthRows = $useLocal
+                ? $dataService->getHistoryMonths(12)
+                : $bq->runQueryCached('bq.dashboard.history_months', "
+                  SELECT DISTINCT month_date
+                  FROM `mca-dashboard-456223.terpinsights_mart.market_pulse_sales_trend`
+                  ORDER BY month_date DESC
+                  LIMIT 12
+                ");
             $monthDates = array_map(fn($r) => isset($r['month_date']) ? Carbon::parse($r['month_date'])->startOfMonth()->format('Y-m-d') : null, $monthRows);
             $monthDates = array_filter($monthDates);
 

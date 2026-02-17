@@ -19,4 +19,7 @@ php artisan storage:link || true
 # Run migrations (required for users/sessions tables; safe to run on every deploy)
 php artisan migrate --force || true
 
+# Warm BigQuery cache so first dashboard/Market Pulse request is fast (runs on every deploy and cold start)
+php artisan cache:warmup || true
+
 exec php artisan serve --host=0.0.0.0 --port="${PORT}"
