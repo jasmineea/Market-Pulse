@@ -188,14 +188,6 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 print-keep-together">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-bold text-gray-900">Monthly Sales Trends</h3>
-                        <div class="flex items-center gap-2 no-print">
-                            <button type="button" data-chart-id="chartSalesTrend" data-csv-name="month" data-csv-value="sales" class="chart-export-png p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700" title="Download PNG">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                            </button>
-                            <button type="button" data-chart-id="chartSalesTrend" data-csv-name="month" data-csv-value="sales" class="chart-export-csv p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700" title="Download CSV">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                            </button>
-                        </div>
                     </div>
                     <div class="h-72">
                         <canvas id="chartSalesTrend" height="260"></canvas>
@@ -206,14 +198,6 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 print-keep-together">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-bold text-gray-900">Active Licenses by Type</h3>
-                        <div class="flex items-center gap-2 no-print">
-                            <button type="button" data-chart-id="chartLicensesByType" data-csv-name="type" data-csv-value="count" class="chart-export-png p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700" title="Download PNG">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                            </button>
-                            <button type="button" data-chart-id="chartLicensesByType" data-csv-name="type" data-csv-value="count" class="chart-export-csv p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700" title="Download CSV">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                            </button>
-                        </div>
                     </div>
                     <div class="h-72">
                         <canvas id="chartLicensesByType" height="260"></canvas>
@@ -224,16 +208,9 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 print-keep-together">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-bold text-gray-900">Category Revenue Breakdown</h3>
-                        <div class="flex items-center gap-2 no-print">
-                            <button type="button" data-chart-id="chartCategoryBreakdown" data-csv-name="category" data-csv-value="value" class="chart-export-png p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700" title="Download PNG">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                            </button>
-                            <button type="button" data-chart-id="chartCategoryBreakdown" data-csv-name="category" data-csv-value="value" class="chart-export-csv p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700" title="Download CSV">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                            </button>
-                        </div>
                     </div>
-                    <div class="h-72 flex items-center justify-center">
+                    {{-- Extra min-height on mobile so legend (positioned below) fits --}}
+                    <div class="min-h-96 sm:min-h-0 sm:h-72 flex items-center justify-center">
                         <canvas id="chartCategoryBreakdown" height="260"></canvas>
                     </div>
                 </div>
@@ -242,16 +219,6 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 print-keep-together relative">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-bold text-gray-900">Dispensary Distribution by County</h3>
-                        @if($canViewCountyChart ?? true)
-                        <div class="flex items-center gap-2 no-print">
-                            <button type="button" data-chart-id="chartDispensaryByCounty" data-csv-name="county" data-csv-value="dispensary_count" class="chart-export-png p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700" title="Download PNG">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                            </button>
-                            <button type="button" data-chart-id="chartDispensaryByCounty" data-csv-name="county" data-csv-value="dispensary_count" class="chart-export-csv p-2 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700" title="Download CSV">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                            </button>
-                        </div>
-                        @endif
                     </div>
                     @if($canViewCountyChart ?? true)
                     <div class="h-72">
@@ -410,6 +377,8 @@
             // 3) Category Revenue Breakdown - doughnut (polished spacing & legend)
             const categoryCtx = document.getElementById('chartCategoryBreakdown');
             const categoryValues = categoryBreakdown.share_pct?.length ? (categoryBreakdown.share_pct || []) : (categoryBreakdown.category_sales || categoryBreakdown.values || []);
+            // Legend position: 'bottom' on mobile so it's not cut off, 'right' on larger screens
+            function categoryLegendPosition() { return (typeof window !== 'undefined' && window.innerWidth < 640) ? 'bottom' : 'right'; }
             if (categoryCtx) {
                 chartInstances.chartCategoryBreakdown = new Chart(categoryCtx, {
                     type: 'doughnut',
@@ -437,7 +406,7 @@
                         cutout: 58,
                         plugins: {
                             legend: {
-                                position: 'right',
+                                position: categoryLegendPosition(),
                                 labels: { padding: 14, font: { size: 12 }, usePointStyle: true }
                             },
                             tooltip: {
@@ -557,6 +526,22 @@
                     URL.revokeObjectURL(link.href);
                 });
             });
+
+            // Category breakdown: responsive legend position (bottom on mobile, right on desktop)
+            var categoryChart = chartInstances.chartCategoryBreakdown;
+            if (categoryChart && typeof categoryLegendPosition === 'function') {
+                var resizeTimeout;
+                window.addEventListener('resize', function () {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(function () {
+                        var pos = categoryLegendPosition();
+                        if (categoryChart.options.plugins.legend.position !== pos) {
+                            categoryChart.options.plugins.legend.position = pos;
+                            categoryChart.update();
+                        }
+                    }, 150);
+                });
+            }
 
             // Snapshot month dropdown: navigate to selected month, or show upgrade modal for locked months
             var snapshotSelect = document.getElementById('snapshot-month');
